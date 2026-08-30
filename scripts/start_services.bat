@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title Resource Monetization Hub - 24/7 Automation
 
@@ -22,30 +22,31 @@ if not exist "configs\.env" (
 )
 
 echo [1] Запустить Telegram AI-транскрибатор (24/7)
-echo [2] Запустить транскрибацию тестового аудио
-echo [3] Запустить мониторинг цен маркетплейсов и выгрузить отчет
-echo [4] Пересобрать интерактивный HTML-дашборд
-echo [5] Выход
+echo [2] Запустить транскрибацию тестового аудио (Microservice)
+echo [3] Запустить мониторинг цен маркетплейсов (DuckDB Scraper)
+echo [4] Проверить статус всех микросервисов (Health Check)
+echo [5] Пересобрать интерактивный HTML-дашборд
+echo [6] Выход
 echo.
 
-set /p choice="Выберите действие (1-5): "
+set /p choice="Выберите действие (1-6): "
 
 if "%choice%"=="1" (
-    echo [*] Запуск Telegram AI-бота...
-    .venv\Scripts\python.exe scripts\transcribe_bot.py
+    .venv\Scripts\python.exe manage.py run bot
 )
 if "%choice%"=="2" (
-    echo [*] Транскрибация тестового файла...
-    .venv\Scripts\python.exe scripts\transcribe_pipeline.py data\test_sample.wav --model medium
+    .venv\Scripts\python.exe manage.py run transcribe data\test_sample.wav --model medium
     pause
 )
 if "%choice%"=="3" (
-    echo [*] Сбор цен и генерация отчетов...
-    .venv\Scripts\python.exe scripts\market_monitor.py --query "авточехлы" --limit 15
+    .venv\Scripts\python.exe manage.py run monitor --query "авточехлы" --limit 15
     pause
 )
 if "%choice%"=="4" (
-    echo [*] Пересборка дашборда...
-    .venv\Scripts\python.exe scripts\meta\build_dashboard.py
+    .venv\Scripts\python.exe manage.py status
+    pause
+)
+if "%choice%"=="5" (
+    .venv\Scripts\python.exe manage.py run dashboard
     pause
 )

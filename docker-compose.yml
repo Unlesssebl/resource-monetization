@@ -1,4 +1,4 @@
-﻿services:
+services:
   telegram_bot:
     build:
       context: .
@@ -13,7 +13,7 @@
       - WHISPER_DEVICE=cpu
       - WHISPER_COMPUTE=int8
     env_file:
-      - configs/.env
+      - .env
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

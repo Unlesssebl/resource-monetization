@@ -1,4 +1,4 @@
-﻿import os
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -12,8 +12,7 @@ LOGS_DIR = ROOT_DIR / "logs"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Load .env
-load_dotenv(CONFIG_DIR / ".env")
+# Load root .env
 load_dotenv(ROOT_DIR / ".env")
 
 class Settings:

@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title Resource Monetization Hub - 24/7 Automation
 
@@ -14,10 +14,10 @@ if not exist ".venv\Scripts\python.exe" (
     uv pip install -r requirements.txt
 )
 
-if not exist "configs\.env" (
-    if exist "configs\.env.example" (
-        copy "configs\.env.example" "configs\.env" >nul
-        echo [*] Создан файл конфигурации configs\.env. Пожалуйста, укажите BOT_TOKEN.
+if not exist ".env" (
+    if exist ".env.example" (
+        copy ".env.example" ".env" >nul
+        echo [*] Создан файл конфигурации .env. Пожалуйста, укажите BOT_TOKEN.
     )
 )
 

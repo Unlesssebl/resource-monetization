@@ -1,0 +1,26 @@
+# Environment variables & Secrets
+.env
+*.key
+*.pem
+*.token
+
+# Data & Temp files
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+*.tmp
+*.zip
+*.7z
+*.rar
+*.iso
+
+# Python Virtual Environments & Cache
+.venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Rclone & Config sensitive files
+configs/*.conf
+!configs/rclone.conf.example

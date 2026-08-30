@@ -1,6 +1,7 @@
-import os
+﻿import os
 import sys
 import time
+import shutil
 import subprocess
 import wave
 from pathlib import Path
@@ -59,8 +60,8 @@ class WhisperEngine:
 
         # 1. Try AMD Radeon DirectCompute GPU Engine
         if cls.GPU_BIN.exists() and model_file.exists():
-            logger.info(f"🚀 Запуск GPU-инференса на AMD Radeon RX 6800 XT (16 GB VRAM)...")
-            temp_wav = settings.DATA_DIR / f"temp_{base_name}_{int(time.time())}.wav"
+            logger.info(f"🚀 Запуск GPU DirectCompute инференса: {file_path.name}")
+            temp_wav = settings.DATA_DIR / f"temp_{base_name}_{int(time.time()*1000)}.wav"
             try:
                 cls.convert_to_wav16k(file_path, temp_wav)
                 lang_arg = ["-l", language] if (language and language.lower() not in ["auto", "none", ""]) else []
@@ -74,27 +75,30 @@ class WhisperEngine:
                     "-otxt"
                 ] + lang_arg
 
-                logger.info(f"Выполнение GPU DirectCompute: {file_path.name}")
-                subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                # Move generated srt/txt to target out_dir
-                gen_srt = temp_wav.with_suffix(".wav.srt")
-                gen_txt = temp_wav.with_suffix(".wav.txt")
+                # main.exe outputs <temp_wav_stem>.srt and <temp_wav_stem>.txt
+                gen_srt = temp_wav.with_suffix(".srt")
+                gen_txt = temp_wav.with_suffix(".txt")
 
                 if gen_srt.exists():
-                    gen_srt.replace(srt_path)
+                    shutil.move(str(gen_srt), str(srt_path))
                 if gen_txt.exists():
-                    gen_txt.replace(txt_path)
+                    shutil.move(str(gen_txt), str(txt_path))
 
-                full_text = txt_path.read_text(encoding="utf-8") if txt_path.exists() else ""
+                full_text = txt_path.read_text(encoding="utf-8").strip() if txt_path.exists() else ""
                 detected_lang = language or "auto"
 
             except Exception as e:
                 logger.warning(f"Ошибка GPU DirectCompute: {e}. Откат на CPU...")
                 return cls._fallback_cpu_transcribe(file_path, out_dir, model_size, language)
             finally:
-                if temp_wav.exists():
-                    temp_wav.unlink(missing_ok=True)
+                for p in [temp_wav, temp_wav.with_suffix(".srt"), temp_wav.with_suffix(".txt")]:
+                    if p.exists():
+                        try:
+                            p.unlink(missing_ok=True)
+                        except Exception:
+                            pass
         else:
             return cls._fallback_cpu_transcribe(file_path, out_dir, model_size, language)
 

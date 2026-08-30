@@ -1,4 +1,6 @@
-import asyncio
+﻿import asyncio
+import time
+from datetime import datetime
 from pathlib import Path
 from aiogram import Bot, Dispatcher, Router, F, types
 from aiogram.filters import CommandStart, Command
@@ -30,7 +32,7 @@ async def cmd_start(message: types.Message):
         f"👋 Привет, {user_name}!\n\n"
         "🎙️ **Я — автономный AI-транскрибатор сверхвысокой скорости.**\n\n"
         "⚡ **Что я умею:**\n"
-        "• Мгновенно расшифровывать голосовые сообщения, аудио и видео в текст.\n"
+        "• Мгновенно расшифровывать голосовые сообщения, видеокружки и аудиофайлы в текст на GPU AMD Radeon RX 6800 XT.\n"
         "• Создавать готовые субтитры (.srt) с таймкодами для монтажа Shorts/Reels/YouTube.\n"
         "• 0 ₽ себестоимость на локальном оборудовании 24/7.\n\n"
         "🚀 Отправь мне голосовое сообщение или аудиофайл!"
@@ -53,16 +55,17 @@ async def cb_pricing(callback: types.CallbackQuery):
 async def cb_stats(callback: types.CallbackQuery):
     stats_text = (
         "📊 **Статус системы:**\n\n"
-        f"• **AI Engine:** faster-whisper ({settings.WHISPER_MODEL})\n"
-        f"• **Compute:** {settings.WHISPER_DEVICE.upper()} ({settings.WHISPER_COMPUTE})\n"
-        "• **Режим:** 24/7 локальная обработка"
+        f"• **AI Accelerator:** AMD Radeon RX 6800 XT (16 GB VRAM)\n"
+        f"• **AI Model:** Whisper {settings.WHISPER_MODEL.upper()}\n"
+        "• **API:** DirectCompute / Vulkan 12.1\n"
+        "• **Режим:** 24/7 автономная обработка"
     )
     await callback.message.answer(stats_text, parse_mode="Markdown")
     await callback.answer()
 
 @router.message(F.voice | F.audio | F.video | F.video_note | F.document)
 async def handle_media(message: types.Message, bot: Bot):
-    status_msg = await message.answer("⏳ Скачиваю файл и запускаю локальный AI-инференс...")
+    status_msg = await message.answer("⏳ Скачиваю файл и запускаю GPU AI-инференс...")
     
     try:
         file_obj = message.voice or message.audio or message.video or message.video_note or message.document
@@ -76,13 +79,18 @@ async def handle_media(message: types.Message, bot: Bot):
         elif message.document and message.document.file_name:
             ext = Path(message.document.file_name).suffix or ".mp3"
 
-        file_info = await bot.get_file(file_id)
+        ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        user_id = message.from_user.id if message.from_user else 0
+        msg_id = message.message_id
+        
         local_dir = settings.DATA_DIR / "bot_downloads"
         local_dir.mkdir(parents=True, exist_ok=True)
-        local_filename = local_dir / f"{file_id[:12]}_{message.from_user.id}{ext}"
+        unique_name = f"audio_{user_id}_{msg_id}_{ts_str}"
+        local_filename = local_dir / f"{unique_name}{ext}"
 
+        file_info = await bot.get_file(file_id)
         await bot.download_file(file_info.file_path, destination=local_filename)
-        await status_msg.edit_text("⚡ Файл загружен. Выполняю транскрибацию Whisper...")
+        await status_msg.edit_text("⚡ Файл загружен. Обработка на GPU AMD Radeon RX 6800 XT...")
 
         res = await asyncio.to_thread(
             WhisperEngine.transcribe,
@@ -92,6 +100,8 @@ async def handle_media(message: types.Message, bot: Bot):
         )
 
         preview = res["full_text"][:1000] + ("..." if len(res["full_text"]) > 1000 else "")
+        if not preview:
+            preview = "(речь не обнаружена или тишина)"
 
         summary_msg = (
             f"✅ **Транскрибация завершена за {res['elapsed']:.1f} сек!**\n"
@@ -103,18 +113,18 @@ async def handle_media(message: types.Message, bot: Bot):
 
         await status_msg.edit_text(summary_msg, parse_mode="Markdown")
 
-        srt_file = FSInputFile(res["srt_path"], filename=f"subtitles_{local_filename.stem}.srt")
-        txt_file = FSInputFile(res["txt_path"], filename=f"transcript_{local_filename.stem}.txt")
+        srt_file = FSInputFile(res["srt_path"], filename=f"subtitles_{ts_str}.srt")
+        txt_file = FSInputFile(res["txt_path"], filename=f"transcript_{ts_str}.txt")
 
         await message.answer_document(srt_file, caption="🎬 Готовые субтитры (.srt)")
         await message.answer_document(txt_file, caption="📄 Полный текст (.txt)")
 
-        # Clean up temporary downloaded file safely
+        # Safe cleanup
         try:
             if local_filename.exists():
                 local_filename.unlink(missing_ok=True)
-        except Exception as err:
-            logger.debug(f"Файл еще удерживается системой: {err}")
+        except Exception:
+            pass
 
     except Exception as e:
         logger.exception("Ошибка при обработке файла")

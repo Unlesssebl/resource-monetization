@@ -23,7 +23,7 @@ def build_dashboard(fetch_live_github: bool = True) -> str:
         print(f"Ошибка: не найден файл конфигурации {config_path}")
         sys.exit(1)
         
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
         
     # Дополняем живыми метриками GitHub
@@ -264,10 +264,27 @@ def build_dashboard(fetch_live_github: bool = True) -> str:
                         <span class="text-slate-400 text-[11px] leading-tight block">${{c.human_friction}}</span>
                     </div>
 
-                    <!-- Evidence & Open Source -->
-                    <div class="space-y-1.5 text-[11px]">
-                        <div class="text-slate-400"><strong class="text-slate-300">Спрос:</strong> ${{c.metrics.search_volume}}</div>
-                        <div class="text-slate-400"><strong class="text-slate-300">Сообщество:</strong> ${{c.metrics.community}}</div>
+                    <!-- Evidence & Proofs -->
+                    <div class="mb-3 space-y-2 text-[11px]">
+                        <div class="bg-indigo-950/30 border border-indigo-500/20 p-2.5 rounded-lg">
+                            <span class="text-indigo-300 font-semibold block mb-1">📊 Доказательства и метрики (Август 2026):</span>
+                            <span class="text-slate-300 block mb-1.5">${{c.evidence ? c.evidence.search_volume : c.metrics.search_volume}}</span>
+                            <div class="flex flex-wrap gap-1.5 mt-1">
+                                ${{c.evidence && c.evidence.proof_links ? c.evidence.proof_links.map(p => `<a href="${{p.url}}" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40 transition-colors text-[10px] font-medium border border-indigo-500/30">🔗 ${{p.label}}</a>`).join('') : ''}}
+                            </div>
+                        </div>
+
+                        ${{c.evidence && c.evidence.financial_math ? `
+                        <div class="bg-emerald-950/20 border border-emerald-500/20 p-2 rounded-lg text-slate-300">
+                            <strong class="text-emerald-400 block text-[10px] mb-0.5">💰 Расчет экономики:</strong>
+                            <span class="text-[11px] leading-tight block text-slate-300">${{c.evidence.financial_math}}</span>
+                        </div>` : ''}}
+
+                        ${{c.evidence && c.evidence.competitive_edge ? `
+                        <div class="bg-purple-950/20 border border-purple-500/20 p-2 rounded-lg text-slate-300">
+                            <strong class="text-purple-400 block text-[10px] mb-0.5">⚔️ Отстройка от конкурентов:</strong>
+                            <span class="text-[11px] leading-tight block text-slate-300">${{c.evidence.competitive_edge}}</span>
+                        </div>` : ''}}
                     </div>
                 </div>
 

@@ -16,6 +16,26 @@ logger = get_logger("WhisperEngine")
 class WhisperEngine:
     GPU_BIN = settings.ROOT_DIR / "tools" / "whisper_gpu" / "main.exe"
     MODELS_DIR = settings.DATA_DIR / "models"
+    _detector_model = None
+
+    @classmethod
+    def get_detector(cls):
+        if cls._detector_model is None:
+            from faster_whisper import WhisperModel
+            cls._detector_model = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=4)
+        return cls._detector_model
+
+    @classmethod
+    def detect_language(cls, audio_wav: Path) -> str:
+        try:
+            detector = cls.get_detector()
+            _, info = detector.transcribe(str(audio_wav), beam_size=1)
+            lang = info.language or "ru"
+            logger.info(f"🌐 Язык аудио определен: {lang.upper()} (уверенность: {info.language_probability:.2f})")
+            return lang
+        except Exception as e:
+            logger.warning(f"Не удалось определить язык ({e}), по умолчанию: ru")
+            return "ru"
 
     @classmethod
     def convert_to_wav16k(cls, input_path: Path, output_wav: Path):
@@ -64,7 +84,11 @@ class WhisperEngine:
             temp_wav = settings.DATA_DIR / f"temp_{base_name}_{int(time.time()*1000)}.wav"
             try:
                 cls.convert_to_wav16k(file_path, temp_wav)
-                lang_arg = ["-l", language] if (language and language.lower() not in ["auto", "none", ""]) else []
+                
+                # Resolve language
+                target_lang = language or settings.WHISPER_LANGUAGE or "auto"
+                if target_lang.lower() in ["auto", "none", ""]:
+                    target_lang = cls.detect_language(temp_wav)
                 
                 cmd = [
                     str(cls.GPU_BIN),
@@ -72,12 +96,13 @@ class WhisperEngine:
                     "-f", str(temp_wav),
                     "-gpu", "0",
                     "-osrt",
-                    "-otxt"
-                ] + lang_arg
+                    "-otxt",
+                    "-l", str(target_lang)
+                ]
 
                 proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                # main.exe outputs <temp_wav_stem>.srt and <temp_wav_stem>.txt
+                # Move generated output files
                 gen_srt = temp_wav.with_suffix(".srt")
                 gen_txt = temp_wav.with_suffix(".txt")
 
@@ -87,7 +112,7 @@ class WhisperEngine:
                     shutil.move(str(gen_txt), str(txt_path))
 
                 full_text = txt_path.read_text(encoding="utf-8").strip() if txt_path.exists() else ""
-                detected_lang = language or "auto"
+                detected_lang = target_lang
 
             except Exception as e:
                 logger.warning(f"Ошибка GPU DirectCompute: {e}. Откат на CPU...")
@@ -111,6 +136,7 @@ class WhisperEngine:
             f.write(f"- **Длительность аудио:** {timedelta(seconds=int(duration))}\n")
             f.write(f"- **Время обработки GPU:** {elapsed:.2f} сек ({speed_factor:.1f}x быстрее реального времени)\n")
             f.write(f"- **Аппаратное ускорение:** AMD Radeon RX 6800 XT (DirectCompute 12)\n")
+            f.write(f"- **Язык:** {detected_lang.upper()}\n")
             f.write(f"- **Модель:** ggml-{model_size}.bin\n\n")
             f.write(f"---\n\n## 📄 Текст\n\n{full_text}\n")
 

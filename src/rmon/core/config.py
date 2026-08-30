@@ -27,8 +27,9 @@ class Settings:
 
     # Whisper Settings
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "medium")
-    WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cpu")
-    WHISPER_COMPUTE: str = os.getenv("WHISPER_COMPUTE", "int8")
+    WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "gpu")
+    WHISPER_COMPUTE: str = os.getenv("WHISPER_COMPUTE", "directcompute")
+    WHISPER_LANGUAGE: str = os.getenv("WHISPER_LANGUAGE", "ru")
 
     # Market Monitor
     DUCKDB_PATH: Path = DATA_DIR / "market_monitor.duckdb"

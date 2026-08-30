@@ -1,8 +1,8 @@
 ﻿import os
 import subprocess
 from pathlib import Path
-from shared.config import settings
-from shared.logger import get_logger
+from rmon.core.config import settings
+from rmon.core.logger import get_logger
 
 logger = get_logger("VodTranscoder")
 
@@ -16,8 +16,7 @@ class VodTranscoder:
         settings.VOD_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         out_file = Path(output_path) if output_path else (settings.VOD_OUTPUT_DIR / f"compressed_{input_path.stem}.mp4")
 
-        logger.info(f"Запуск аппаратного сжатия GPU AMF для: {input_path.name}")
-        # Try FFmpeg with AMD AMF hardware acceleration (hevc_amf)
+        logger.info(f"Аппаратное сжатие GPU AMF для: {input_path.name}")
         cmd = [
             "ffmpeg", "-y",
             "-i", str(input_path),
@@ -31,7 +30,7 @@ class VodTranscoder:
         try:
             res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if res.returncode != 0:
-                logger.warning("hevc_amf недоступен в текущей сессии, откат на CPU libx265/libx264...")
+                logger.warning("hevc_amf недоступен, откат на CPU libx264...")
                 cmd_fallback = [
                     "ffmpeg", "-y",
                     "-i", str(input_path),

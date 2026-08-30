@@ -1,29 +1,37 @@
 ﻿import asyncio
 from pathlib import Path
-from aiogram import Router, F, types, Bot
+from aiogram import Bot, Dispatcher, Router, F, types
 from aiogram.filters import CommandStart, Command
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from shared.config import settings
-from shared.logger import get_logger
-from services.transcription.engine import WhisperEngine
-from services.telegram_bot.keyboards import get_main_keyboard
+from rmon.core.config import settings
+from rmon.core.logger import get_logger
+from rmon.services.whisper.engine import WhisperEngine
 
-logger = get_logger("TelegramHandlers")
+logger = get_logger("TelegramBot")
 router = Router()
 
-BOT_DOWNLOADS_DIR = settings.DATA_DIR / "bot_downloads"
-BOT_DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+def get_main_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="⚡ Тарифы и подписка", callback_data="pricing"),
+        InlineKeyboardButton(text="📊 Статистика", callback_data="stats")
+    )
+    builder.row(
+        InlineKeyboardButton(text="💬 Поддержка / B2B Заказ", url="https://t.me/BotFather")
+    )
+    return builder.as_markup()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message):
     user_name = message.from_user.first_name if message.from_user else "друг"
     welcome_text = (
         f"👋 Привет, {user_name}!\n\n"
-        "🎙️ **Я — автономный AI-транскрибатор сверхвысокой скорости (Microservice Core).**\n\n"
-        "⚡ **Возможности:**\n"
-        "• Мгновенная расшифровка голосовых сообщений, аудио и видео в текст.\n"
-        "• Генерация файлов субтитров (.srt) с таймкодами для монтажа.\n"
+        "🎙️ **Я — автономный AI-транскрибатор сверхвысокой скорости.**\n\n"
+        "⚡ **Что я умею:**\n"
+        "• Мгновенно расшифровывать голосовые сообщения, аудио и видео в текст.\n"
+        "• Создавать готовые субтитры (.srt) с таймкодами для монтажа Shorts/Reels/YouTube.\n"
         "• 0 ₽ себестоимость на локальном оборудовании 24/7.\n\n"
         "🚀 Отправь мне голосовое сообщение или аудиофайл!"
     )
@@ -32,7 +40,7 @@ async def cmd_start(message: types.Message):
 @router.callback_query(F.data == "pricing")
 async def cb_pricing(callback: types.CallbackQuery):
     pricing_text = (
-        "💎 **Тарифные планы:**\n\n"
+        "💎 **Тарифы на AI-транскрибацию:**\n\n"
         "• **Бесплатный тест:** первые файлы до 5 минут — бесплатно.\n"
         "• **Разовый пакет (до 3 часов аудио):** 500 ₽ (сдача за 15 минут).\n"
         "• **B2B Подписка для подкастеров (до 30 часов/мес):** 3 500 ₽/мес.\n"
@@ -44,17 +52,17 @@ async def cb_pricing(callback: types.CallbackQuery):
 @router.callback_query(F.data == "stats")
 async def cb_stats(callback: types.CallbackQuery):
     stats_text = (
-        "📊 **Статус микросервисов:**\n\n"
+        "📊 **Статус системы:**\n\n"
         f"• **AI Engine:** faster-whisper ({settings.WHISPER_MODEL})\n"
         f"• **Compute:** {settings.WHISPER_DEVICE.upper()} ({settings.WHISPER_COMPUTE})\n"
-        "• **Архитектура:** Microservices & Clean Architecture"
+        "• **Режим:** 24/7 локальная обработка"
     )
     await callback.message.answer(stats_text, parse_mode="Markdown")
     await callback.answer()
 
 @router.message(F.voice | F.audio | F.video | F.video_note | F.document)
 async def handle_media(message: types.Message, bot: Bot):
-    status_msg = await message.answer("⏳ Скачиваю файл и передаю в микросервис транскрибации...")
+    status_msg = await message.answer("⏳ Скачиваю файл и запускаю локальный AI-инференс...")
     
     try:
         file_obj = message.voice or message.audio or message.video or message.video_note or message.document
@@ -69,15 +77,17 @@ async def handle_media(message: types.Message, bot: Bot):
             ext = Path(message.document.file_name).suffix or ".mp3"
 
         file_info = await bot.get_file(file_id)
-        local_filename = BOT_DOWNLOADS_DIR / f"{file_id[:12]}_{message.from_user.id}{ext}"
+        local_dir = settings.DATA_DIR / "bot_downloads"
+        local_dir.mkdir(parents=True, exist_ok=True)
+        local_filename = local_dir / f"{file_id[:12]}_{message.from_user.id}{ext}"
 
         await bot.download_file(file_info.file_path, destination=local_filename)
-        await status_msg.edit_text("⚡ Файл получен. Выполняю инференс Whisper...")
+        await status_msg.edit_text("⚡ Файл загружен. Выполняю транскрибацию Whisper...")
 
         res = await asyncio.to_thread(
             WhisperEngine.transcribe,
             file_path=str(local_filename),
-            output_dir=str(BOT_DOWNLOADS_DIR / "transcripts"),
+            output_dir=str(local_dir / "transcripts"),
             model_size=settings.WHISPER_MODEL
         )
 
@@ -88,7 +98,7 @@ async def handle_media(message: types.Message, bot: Bot):
             f"🚀 **Скорость:** {res['speed_factor']:.1f}x в реальном времени\n"
             f"🌍 **Язык:** {res['language'].upper()}\n\n"
             f"📝 **Текст:**\n_{preview}_\n\n"
-            f"👇 Файлы субтитров и текста прикреплены ниже:"
+            f"👇 Ниже прикреплены файлы субтитров (.srt) и полный текст:"
         )
 
         await status_msg.edit_text(summary_msg, parse_mode="Markdown")
@@ -96,12 +106,25 @@ async def handle_media(message: types.Message, bot: Bot):
         srt_file = FSInputFile(res["srt_path"], filename=f"subtitles_{local_filename.stem}.srt")
         txt_file = FSInputFile(res["txt_path"], filename=f"transcript_{local_filename.stem}.txt")
 
-        await message.answer_document(srt_file, caption="🎬 Субтитры (.srt)")
-        await message.answer_document(txt_file, caption="📄 Текст (.txt)")
+        await message.answer_document(srt_file, caption="🎬 Готовые субтитры (.srt)")
+        await message.answer_document(txt_file, caption="📄 Полный текст (.txt)")
 
         if local_filename.exists():
             local_filename.unlink()
 
     except Exception as e:
-        logger.exception("Ошибка при обработке сообщения")
+        logger.exception("Ошибка при обработке файла")
         await status_msg.edit_text(f"❌ Ошибка обработки: {str(e)[:150]}")
+
+async def start_bot():
+    if not settings.BOT_TOKEN or settings.BOT_TOKEN == "your_telegram_bot_token_here":
+        logger.warning("BOT_TOKEN не установлен в configs/.env.")
+        print("\n⚠️ Укажите BOT_TOKEN в configs/.env для подключения к Telegram.")
+        return
+
+    bot = Bot(token=settings.BOT_TOKEN)
+    dp = Dispatcher()
+    dp.include_router(router)
+
+    logger.info("🤖 Telegram-бот запущен 24/7...")
+    await dp.start_polling(bot)

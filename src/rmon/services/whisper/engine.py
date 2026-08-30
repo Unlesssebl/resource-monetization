@@ -3,10 +3,10 @@ import time
 from pathlib import Path
 from datetime import timedelta
 from faster_whisper import WhisperModel
-from shared.config import settings
-from shared.logger import get_logger
+from rmon.core.config import settings
+from rmon.core.logger import get_logger
 
-logger = get_logger("TranscriptionEngine")
+logger = get_logger("WhisperEngine")
 
 def format_timestamp(seconds: float) -> str:
     td = timedelta(seconds=seconds)
@@ -18,19 +18,18 @@ def format_timestamp(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
 
 class WhisperEngine:
-    _instance = None
     _model = None
     _current_model_size = None
 
     @classmethod
-    def get_model(cls, model_size: str = None, device: str = None, compute_type: str = None):
+    def get_model(cls, model_size: str = None):
         model_size = model_size or settings.WHISPER_MODEL
-        device = device or settings.WHISPER_DEVICE
-        compute_type = compute_type or settings.WHISPER_COMPUTE
+        device = settings.WHISPER_DEVICE
+        compute_type = settings.WHISPER_COMPUTE
 
         if cls._model is None or cls._current_model_size != model_size:
             cpu_threads = min(os.cpu_count() or 4, 16)
-            logger.info(f"Загрузка модели faster-whisper ({model_size}) на {device.upper()} ({compute_type})...")
+            logger.info(f"Инициализация faster-whisper ({model_size}) на {device.upper()} ({compute_type})...")
             cls._model = WhisperModel(
                 model_size,
                 device=device,
@@ -57,7 +56,7 @@ class WhisperEngine:
             raise FileNotFoundError(f"Файл не найден: {file_path}")
 
         model = cls.get_model(model_size)
-        logger.info(f"Начало транскрибации: {file_path.name}")
+        logger.info(f"Старт транскрибации: {file_path.name}")
 
         segments, info = model.transcribe(
             str(file_path),
@@ -99,14 +98,14 @@ class WhisperEngine:
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(f"# 📝 Транскрипт: {file_path.name}\n\n")
-            f.write(f"- **Длительность аудио:** {timedelta(seconds=int(duration))}\n")
-            f.write(f"- **Время обработки:** {elapsed:.2f} сек ({speed_factor:.1f}x быстрее реального времени)\n")
+            f.write(f"- **Длительность:** {timedelta(seconds=int(duration))}\n")
+            f.write(f"- **Время обработки:** {elapsed:.2f} сек ({speed_factor:.1f}x)\n")
             f.write(f"- **Язык:** {detected_lang.upper()} ({lang_prob:.1%})\n\n")
             f.write("---\n\n## ⏱️ Таймкоды и текст\n\n")
             for line in text_segments:
                 f.write(f"{line}\n\n")
 
-        logger.info(f"Транскрибация завершена за {elapsed:.2f} сек ({speed_factor:.1f}x speed)")
+        logger.info(f"Успешно обработано за {elapsed:.2f} сек ({speed_factor:.1f}x speed)")
 
         return {
             "duration": duration,

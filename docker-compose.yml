@@ -5,9 +5,10 @@
       dockerfile: Dockerfile
     container_name: rmon_telegram_bot
     restart: unless-stopped
-    command: python manage.py run bot
+    command: python scripts/run_bot.py
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/src:/app
       - WHISPER_MODEL=medium
       - WHISPER_DEVICE=cpu
       - WHISPER_COMPUTE=int8
@@ -29,7 +30,10 @@
       dockerfile: Dockerfile
     container_name: rmon_market_monitor
     restart: unless-stopped
-    command: python manage.py run monitor --query "авточехлы" --limit 25
+    command: python scripts/run_monitor.py --query "авточехлы" --limit 25
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/src:/app
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

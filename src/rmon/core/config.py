@@ -2,12 +2,13 @@
 from pathlib import Path
 from dotenv import load_dotenv
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+# Root is 3 levels up from src/rmon/core
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 CONFIG_DIR = ROOT_DIR / "configs"
 DATA_DIR = ROOT_DIR / "data"
 LOGS_DIR = ROOT_DIR / "logs"
 
-# Ensure runtime directories exist
+# Ensure directories exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -21,20 +22,20 @@ class Settings:
     DATA_DIR: Path = DATA_DIR
     LOGS_DIR: Path = LOGS_DIR
 
-    # Telegram Gateway Settings
+    # Telegram Gateway
     BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
     ADMIN_ID: str = os.getenv("ADMIN_ID", "")
 
-    # Whisper AI Settings
+    # Whisper Settings
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "medium")
     WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cpu")
     WHISPER_COMPUTE: str = os.getenv("WHISPER_COMPUTE", "int8")
 
-    # Market Monitor Settings
+    # Market Monitor
     DUCKDB_PATH: Path = DATA_DIR / "market_monitor.duckdb"
     REPORTS_DIR: Path = DATA_DIR / "market_reports"
 
-    # VOD Vault Settings
+    # VOD Vault
     VOD_OUTPUT_DIR: Path = DATA_DIR / "vod_recordings"
 
 settings = Settings()

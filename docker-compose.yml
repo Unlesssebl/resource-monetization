@@ -1,0 +1,41 @@
+﻿services:
+  telegram_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rmon_telegram_bot
+    restart: unless-stopped
+    command: python manage.py run bot
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WHISPER_MODEL=medium
+      - WHISPER_DEVICE=cpu
+      - WHISPER_COMPUTE=int8
+    env_file:
+      - configs/.env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./configs:/app/configs:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'
+          memory: 16G
+
+  market_monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rmon_market_monitor
+    restart: unless-stopped
+    command: python manage.py run monitor --query "авточехлы" --limit 25
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./configs:/app/configs:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G

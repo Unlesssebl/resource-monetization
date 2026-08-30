@@ -1,0 +1,16 @@
+﻿# Core AI & Speech-to-Text
+faster-whisper>=1.2.0
+
+# Telegram Bot Gateway
+aiogram>=3.30.0
+aiofiles>=25.1.0
+
+# Market Monitor & Scraper
+duckdb>=1.5.0
+playwright>=1.60.0
+pandas>=3.0.0
+openpyxl>=3.1.0
+
+# Utilities & Config
+python-dotenv>=1.2.0
+tqdm>=4.70.0

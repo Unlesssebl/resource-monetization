@@ -1,0 +1,17 @@
+﻿.git/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+configs/.env
+.idea/
+.vscode/
+*.tmp
+*.zip
+*.7z

@@ -1,50 +1,41 @@
-﻿import os
+import os
+import sys
 import time
+import subprocess
+import wave
 from pathlib import Path
 from datetime import timedelta
-from faster_whisper import WhisperModel
+import av
+
 from rmon.core.config import settings
 from rmon.core.logger import get_logger
 
 logger = get_logger("WhisperEngine")
 
-def format_timestamp(seconds: float) -> str:
-    td = timedelta(seconds=seconds)
-    total_seconds = int(td.total_seconds())
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
-    secs = total_seconds % 60
-    millis = int((seconds - int(seconds)) * 1000)
-    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
-
 class WhisperEngine:
-    _model = None
-    _current_model_size = None
+    GPU_BIN = settings.ROOT_DIR / "tools" / "whisper_gpu" / "main.exe"
+    MODELS_DIR = settings.DATA_DIR / "models"
 
     @classmethod
-    def get_model(cls, model_size: str = None):
-        model_size = model_size or settings.WHISPER_MODEL
-        device = settings.WHISPER_DEVICE
-        compute_type = settings.WHISPER_COMPUTE
+    def convert_to_wav16k(cls, input_path: Path, output_wav: Path):
+        container = av.open(str(input_path))
+        resampler = av.AudioResampler(format="s16", layout="mono", rate=16000)
 
-        if cls._model is None or cls._current_model_size != model_size:
-            cpu_threads = min(os.cpu_count() or 4, 16)
-            logger.info(f"Инициализация faster-whisper ({model_size}) на {device.upper()} ({compute_type})...")
-            cls._model = WhisperModel(
-                model_size,
-                device=device,
-                compute_type=compute_type,
-                cpu_threads=cpu_threads
-            )
-            cls._current_model_size = model_size
-        return cls._model
+        with wave.open(str(output_wav), "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(16000)
+            for frame in container.decode(audio=0):
+                resampled_frames = resampler.resample(frame)
+                for r_frame in resampled_frames:
+                    wav.writeframes(r_frame.to_ndarray().tobytes())
 
     @classmethod
     def transcribe(
         cls,
         file_path: str,
         output_dir: str = None,
-        model_size: str = None,
+        model_size: str = "medium",
         language: str = None
     ) -> dict:
         start_time = time.time()
@@ -55,20 +46,90 @@ class WhisperEngine:
         if not file_path.exists():
             raise FileNotFoundError(f"Файл не найден: {file_path}")
 
-        model = cls.get_model(model_size)
-        logger.info(f"Старт транскрибации: {file_path.name}")
+        # Check audio duration
+        with av.open(str(file_path)) as c:
+            duration = float(c.duration) / av.time_base if c.duration else 0.0
 
-        segments, info = model.transcribe(
-            str(file_path),
-            beam_size=5,
-            language=language,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=500)
-        )
+        model_file = cls.MODELS_DIR / f"ggml-{model_size}.bin"
+        base_name = file_path.stem
+        srt_path = out_dir / f"{base_name}.srt"
+        txt_path = out_dir / f"{base_name}.txt"
+        md_path = out_dir / f"{base_name}.md"
 
-        detected_lang = info.language
-        lang_prob = info.language_probability
-        duration = info.duration
+        # 1. Try AMD Radeon DirectCompute GPU Engine
+        if cls.GPU_BIN.exists() and model_file.exists():
+            logger.info(f"🚀 Запуск GPU-инференса на AMD Radeon RX 6800 XT (16 GB VRAM)...")
+            temp_wav = settings.DATA_DIR / f"temp_{base_name}_{int(time.time())}.wav"
+            try:
+                cls.convert_to_wav16k(file_path, temp_wav)
+                lang_arg = ["-l", language] if (language and language.lower() not in ["auto", "none", ""]) else []
+                
+                cmd = [
+                    str(cls.GPU_BIN),
+                    "-m", str(model_file),
+                    "-f", str(temp_wav),
+                    "-gpu", "0",
+                    "-osrt",
+                    "-otxt"
+                ] + lang_arg
+
+                logger.info(f"Выполнение GPU DirectCompute: {file_path.name}")
+                subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                # Move generated srt/txt to target out_dir
+                gen_srt = temp_wav.with_suffix(".wav.srt")
+                gen_txt = temp_wav.with_suffix(".wav.txt")
+
+                if gen_srt.exists():
+                    gen_srt.replace(srt_path)
+                if gen_txt.exists():
+                    gen_txt.replace(txt_path)
+
+                full_text = txt_path.read_text(encoding="utf-8") if txt_path.exists() else ""
+                detected_lang = language or "auto"
+
+            except Exception as e:
+                logger.warning(f"Ошибка GPU DirectCompute: {e}. Откат на CPU...")
+                return cls._fallback_cpu_transcribe(file_path, out_dir, model_size, language)
+            finally:
+                if temp_wav.exists():
+                    temp_wav.unlink(missing_ok=True)
+        else:
+            return cls._fallback_cpu_transcribe(file_path, out_dir, model_size, language)
+
+        elapsed = time.time() - start_time
+        speed_factor = duration / elapsed if elapsed > 0 else 0
+
+        # Generate Markdown Summary
+        with open(md_path, "w", encoding="utf-8") as f:
+            f.write(f"# 📝 Транскрипт (GPU RX 6800 XT): {file_path.name}\n\n")
+            f.write(f"- **Длительность аудио:** {timedelta(seconds=int(duration))}\n")
+            f.write(f"- **Время обработки GPU:** {elapsed:.2f} сек ({speed_factor:.1f}x быстрее реального времени)\n")
+            f.write(f"- **Аппаратное ускорение:** AMD Radeon RX 6800 XT (DirectCompute 12)\n")
+            f.write(f"- **Модель:** ggml-{model_size}.bin\n\n")
+            f.write(f"---\n\n## 📄 Текст\n\n{full_text}\n")
+
+        logger.info(f"✅ GPU обработка завершена за {elapsed:.2f} сек ({speed_factor:.1f}x speed)")
+
+        return {
+            "duration": duration,
+            "elapsed": elapsed,
+            "speed_factor": speed_factor,
+            "language": detected_lang,
+            "srt_path": str(srt_path),
+            "txt_path": str(txt_path),
+            "md_path": str(md_path),
+            "full_text": full_text
+        }
+
+    @classmethod
+    def _fallback_cpu_transcribe(cls, file_path: Path, out_dir: Path, model_size: str, language: str) -> dict:
+        from faster_whisper import WhisperModel
+        logger.info("Запуск резервного инференса на CPU...")
+        start_time = time.time()
+        cpu_threads = min(os.cpu_count() or 4, 16)
+        model = WhisperModel(model_size, device="cpu", compute_type="int8", cpu_threads=cpu_threads)
+        segments, info = model.transcribe(str(file_path), beam_size=5, language=language)
 
         base_name = file_path.stem
         srt_path = out_dir / f"{base_name}.srt"
@@ -76,42 +137,26 @@ class WhisperEngine:
         md_path = out_dir / f"{base_name}.md"
 
         srt_lines = []
-        text_segments = []
+        text_lines = []
+        for idx, seg in enumerate(segments, 1):
+            td_s = str(timedelta(seconds=int(seg.start)))
+            td_e = str(timedelta(seconds=int(seg.end)))
+            srt_lines.append(f"{idx}\n{td_s},000 --> {td_e},000\n{seg.text.strip()}\n")
+            text_lines.append(seg.text.strip())
 
-        for idx, seg in enumerate(segments, start=1):
-            start_ts = format_timestamp(seg.start)
-            end_ts = format_timestamp(seg.end)
-            text = seg.text.strip()
-
-            srt_lines.append(f"{idx}\n{start_ts} --> {end_ts}\n{text}\n")
-            text_segments.append(f"[{format_timestamp(seg.start)[:8]}] {text}")
-
-        with open(srt_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(srt_lines))
-
-        full_text = " ".join([seg.split("] ", 1)[-1] for seg in text_segments])
-        with open(txt_path, "w", encoding="utf-8") as f:
-            f.write(full_text)
+        srt_path.write_text("\n".join(srt_lines), encoding="utf-8")
+        full_text = " ".join(text_lines)
+        txt_path.write_text(full_text, encoding="utf-8")
 
         elapsed = time.time() - start_time
+        duration = info.duration
         speed_factor = duration / elapsed if elapsed > 0 else 0
-
-        with open(md_path, "w", encoding="utf-8") as f:
-            f.write(f"# 📝 Транскрипт: {file_path.name}\n\n")
-            f.write(f"- **Длительность:** {timedelta(seconds=int(duration))}\n")
-            f.write(f"- **Время обработки:** {elapsed:.2f} сек ({speed_factor:.1f}x)\n")
-            f.write(f"- **Язык:** {detected_lang.upper()} ({lang_prob:.1%})\n\n")
-            f.write("---\n\n## ⏱️ Таймкоды и текст\n\n")
-            for line in text_segments:
-                f.write(f"{line}\n\n")
-
-        logger.info(f"Успешно обработано за {elapsed:.2f} сек ({speed_factor:.1f}x speed)")
 
         return {
             "duration": duration,
             "elapsed": elapsed,
             "speed_factor": speed_factor,
-            "language": detected_lang,
+            "language": info.language,
             "srt_path": str(srt_path),
             "txt_path": str(txt_path),
             "md_path": str(md_path),

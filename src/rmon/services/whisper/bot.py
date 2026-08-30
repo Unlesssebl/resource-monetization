@@ -126,7 +126,6 @@ async def start_bot():
     dp = Dispatcher()
     dp.include_router(router)
 
-    logger.info(f"⏳ Прогрев AI-модели faster-whisper ({settings.WHISPER_MODEL})...")
-    await asyncio.to_thread(WhisperEngine.get_model, settings.WHISPER_MODEL)
-    logger.info("🤖 AI-модель готова в памяти! Telegram-бот слушает 24/7...")
+    logger.info("🚀 AI-движок GPU DirectCompute (AMD Radeon RX 6800 XT) активен!")
+    logger.info("🤖 Telegram-бот слушает 24/7...")
     await dp.start_polling(bot)

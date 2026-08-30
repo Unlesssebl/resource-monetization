@@ -109,8 +109,12 @@ async def handle_media(message: types.Message, bot: Bot):
         await message.answer_document(srt_file, caption="🎬 Готовые субтитры (.srt)")
         await message.answer_document(txt_file, caption="📄 Полный текст (.txt)")
 
-        if local_filename.exists():
-            local_filename.unlink()
+        # Clean up temporary downloaded file safely
+        try:
+            if local_filename.exists():
+                local_filename.unlink(missing_ok=True)
+        except Exception as err:
+            logger.debug(f"Файл еще удерживается системой: {err}")
 
     except Exception as e:
         logger.exception("Ошибка при обработке файла")

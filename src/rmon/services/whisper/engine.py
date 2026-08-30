@@ -18,17 +18,17 @@ class WhisperEngine:
 
     @classmethod
     def convert_to_wav16k(cls, input_path: Path, output_wav: Path):
-        container = av.open(str(input_path))
-        resampler = av.AudioResampler(format="s16", layout="mono", rate=16000)
-
-        with wave.open(str(output_wav), "wb") as wav:
-            wav.setnchannels(1)
-            wav.setsampwidth(2)
-            wav.setframerate(16000)
-            for frame in container.decode(audio=0):
-                resampled_frames = resampler.resample(frame)
-                for r_frame in resampled_frames:
-                    wav.writeframes(r_frame.to_ndarray().tobytes())
+        with av.open(str(input_path)) as container:
+            resampler = av.AudioResampler(format="s16", layout="mono", rate=16000)
+            with wave.open(str(output_wav), "wb") as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(16000)
+                for frame in container.decode(audio=0):
+                    resampled_frames = resampler.resample(frame)
+                    for r_frame in resampled_frames:
+                        wav.writeframes(r_frame.to_ndarray().tobytes())
+            container.close()
 
     @classmethod
     def transcribe(
@@ -49,6 +49,7 @@ class WhisperEngine:
         # Check audio duration
         with av.open(str(file_path)) as c:
             duration = float(c.duration) / av.time_base if c.duration else 0.0
+            c.close()
 
         model_file = cls.MODELS_DIR / f"ggml-{model_size}.bin"
         base_name = file_path.stem

@@ -282,7 +282,7 @@ class MagazineArticleSEOGenerator:
     <title>{clean_name} — Аналитический разбор и справедливая стоимость в {city_title} | PriceRadar Journal</title>
     <meta name="description" content="Редакционное исследование котировок б/у {clean_name} на {date_full}. Справедливая стоимость: {med_price:,.0f} ₽. Аналитика {len(deals)} лотов, вердикт куратора и паспорт устройства.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23181816'/%3E%3Ctext x='16' y='22' font-size='18' font-family='Georgia, serif' fill='%23FAF8F5' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
         body {{ font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }}
@@ -305,7 +305,7 @@ class MagazineArticleSEOGenerator:
     <!-- Masthead -->
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
         <div class="max-w-6xl mx-auto px-8 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-baseline gap-2.5 text-sm text-[#181816] hover:opacity-80 transition">
+            <a href="../../../index.html" class="flex items-baseline gap-2.5 text-sm text-[#181816] hover:opacity-80 transition">
                 <span class="font-serif-editorial text-2xl tracking-tight font-medium">PriceRadar</span>
                 <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Issue 26</span>
             </a>
@@ -549,7 +549,7 @@ class MagazineArticleSEOGenerator:
     <title>PriceRadar Journal — Аналитическое издание вторичного рынка</title>
     <meta name="description" content="Журнал и открытый Data Lake ценообразования, технического скоринга и аналитики электроники.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23181816'/%3E%3Ctext x='16' y='22' font-size='18' font-family='Georgia, serif' fill='%23FAF8F5' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         body {{ font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }}
@@ -560,7 +560,7 @@ class MagazineArticleSEOGenerator:
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
         <div class="max-w-6xl mx-auto px-8 h-20 flex items-center justify-between">
-            <a href="/" class="font-serif-editorial text-2xl tracking-tight font-medium text-[#181816]">
+            <a href="./index.html" class="font-serif-editorial text-2xl tracking-tight font-medium text-[#181816]">
                 PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
             </a>
             <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-xs font-mono text-[#B85331] hover:underline font-medium">

@@ -32,8 +32,16 @@ class ItchPackager:
         license_path.write_text(license_text, encoding="utf-8")
         return license_path
 
-    def package_bundle(self, source_dir: Path, pack_slug: str, title: str, category: str = "textures", price_usd: float = 4.99) -> Path:
-        """Create a complete ZIP release bundle with store metadata."""
+    def package_bundle(
+        self,
+        source_dir: Path,
+        pack_slug: str,
+        title: str,
+        category: str = "textures",
+        price_usd: float = 4.99,
+        cleanup_source: bool = True
+    ) -> Path:
+        """Create a complete ZIP release bundle with store metadata and optional source cleanup."""
         bundle_temp = self.releases_dir / f"temp_{pack_slug}"
         bundle_temp.mkdir(parents=True, exist_ok=True)
 
@@ -68,7 +76,13 @@ class ItchPackager:
                 if item.is_file():
                     zf.write(item, item.relative_to(bundle_temp))
 
-        # Cleanup temp
+        # Cleanup temp bundle
         shutil.rmtree(bundle_temp, ignore_errors=True)
+
+        # Auto-cleanup source directory if requested
+        if cleanup_source and source_dir.exists():
+            shutil.rmtree(source_dir, ignore_errors=True)
+            logger.info(f"Cleaned up intermediate source directory: {source_dir}")
+
         logger.info(f"Asset pack successfully built for itch.io: {zip_path} ({zip_path.stat().st_size / 1024:.1f} KB)")
         return zip_path

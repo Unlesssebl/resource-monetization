@@ -30,6 +30,14 @@
 
 * **Общий стек:** Python, PowerShell / Bash, rclone, DuckDB, Playwright, Faster-Whisper, 7-Zip, Open Source CLI.
 
+### 🏛️ Архитектура платформы RMon:
+* `src/rmon/core/`: `hardware.py` (Multi-GPU & System Telemetry Arbiter), `gateway.py` (Telegram Gateway), `lake.py` (DuckDB OLAP Lake + Parquet), `gemini.py` (Key Rotation Pool & Fallback).
+* `src/rmon/services/scraper/`: `avito.py` (Playwright Stealth Scraper), `daemon.py` (24/7 Monitor Loop).
+* `src/rmon/services/ai/`: `deal_intelligence.py` (Liquidity Velocity & Fast Cash Pitch), `deal_auditor.py` (Hybrid Gemini Flash / Ollama RTX 3050 CUDA).
+* `src/rmon/services/whisper/`: `engine.py` (DirectCompute Transcriber), `repurpose.py` (Video & Podcast Content Factory).
+* `src/rmon/services/knowledge/`: `case_manager.py` (Hybrid Markdown/DuckDB Monetization Knowledge Base & Idea Radar).
+* `scripts/rmon.py`: Единая CLI консоль управления (`status`, `cases`, `repurpose`, `monitor`, `inspect`, `audit`, `transcribe`, `bot`, `sync`).
+
 ---
 
 ## Правила и стандарты разработки:
@@ -45,6 +53,7 @@
 3. **Изоляция и организация файлов:**
    * Все скрипты размещать в `scripts/`.
    * Все временные файлы, архивы и кэш складывать строго в `data/` (защищено `.gitignore`).
+   * База знаний кейсов хранится в `data/knowledge/cases/*.md` и версионируется в Git.
    * Логи выполнения процессов сохранять в `logs/`.
    * Конфигурации и шаблоны хранить в `configs/`.
 

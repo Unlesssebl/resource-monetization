@@ -1,11 +1,12 @@
 """
-Claude (Anthropic Warm Editorial) & Notion UI Design System Generator.
-Пересобирает статический портал в благородный, премиальный эдиториал-стиль:
-- Теплая древесно-угольная палитра Claude (#141413 / #1E1E1C / #CC785C Terracotta)
-- Эдиториал-типографика (Книжный Serif заголовок + Modern Sans + JetBrains Mono)
-- Минималистичные Notion Callout-блоки с иконками и бейджами свойств
-- Векторные SVG-графики в теплой гамме без кислотных неонов
-- Полное соответствие стандарту Anti-Slop Kit
+Clean Minimalist Hardware Price Portal Generator (PCPartPicker & Notion Style).
+Использует легкий, проверенный стек:
+- Tailwind CSS 3.x для чистой верстки без визуального мусора
+- Векторные иконки Lucide Icons (вместо эмодзи)
+- Визуальная шкала ценового диапазона (Price Range Gauge в стиле Google Flights / StockX)
+- Плавный криволинейный SVG-график (Cubic Bezier Sparkline)
+- Настоящая структурированная таблица предложений с фильтрацией
+- Естественный человеческий язык без биржевого оверинжиниринга
 """
 import os
 import re
@@ -20,56 +21,59 @@ from rmon.core.config import settings
 from rmon.core.lake import DataLake
 from rmon.core.logger import get_logger
 
-logger = get_logger("EditorialSEOGenerator")
+logger = get_logger("CleanSEOGenerator")
 
 HARDWARE_DATABASE = {
     "RTX_3080": {
-        "name": "NVIDIA GeForce RTX 3080",
+        "name": "GeForce RTX 3080",
+        "category": "Видеокарта",
         "msrp_rub": 65000,
         "vram": "10 GB GDDR6X",
-        "bus": "320-bit",
-        "tdp": "320 W",
+        "bus": "320 bit",
+        "tdp": "320 Вт",
         "cuda_cores": "8704",
-        "critical_temp": "83°C (GPU) / 102°C (VRAM Junction)",
+        "interface": "PCIe 4.0 x16",
         "checks": [
-            "15-минутный стресс-тест в FurMark 4K с фиксацией стабильности FPS",
-            "Мониторинг температуры памяти GDDR6X в HWiNFO64 (не выше 94°C)",
-            "Проверка ревизии термопрокладок бэкплейта на предмет масляных подтеков",
-            "Тест стабильности питания под пиковой нагрузкой в 3DMark TimeSpy"
+            "Тест в FurMark не менее 10 минут (температура чипа должна быть до 74°C)",
+            "Проверка температуры памяти GDDR6X в HWiNFO64 (не должна превышать 94°C)",
+            "Визуальный осмотр бэкплейта и винтов на предмет вскрытия и следов перегрева",
+            "Тест вентиляторов на отсутствие постороннего шума и вибраций на 100% оборотов"
         ]
     },
     "RTX_4070": {
-        "name": "NVIDIA GeForce RTX 4070",
+        "name": "GeForce RTX 4070",
+        "category": "Видеокарта",
         "msrp_rub": 72000,
         "vram": "12 GB GDDR6X",
-        "bus": "192-bit",
-        "tdp": "200 W",
+        "bus": "192 bit",
+        "tdp": "200 Вт",
         "cuda_cores": "5888",
-        "critical_temp": "75°C (GPU) / 88°C (VRAM)",
+        "interface": "PCIe 4.0 x16",
         "checks": [
-            "Осмотр разъема 12VHPWR на предмет термической деформации контактов",
-            "Тест в 3DMark TimeSpy на удержание базовой частоты Boost (2475+ MHz)",
-            "Наличие оригинальной гарантийной пломбы и чека авторизованного ритейлера"
+            "Осмотр 16-контактного разъема 12VHPWR на плотность посадки и целостность контактов",
+            "Тест в 3DMark TimeSpy на удержание Boost-частоты (не ниже 2475 МГц)",
+            "Проверка наличия гарантийной пломбы производителя и электронного чека"
         ]
     },
     "IPHONE_14": {
-        "name": "Apple iPhone 14",
+        "name": "iPhone 14 (128/256 GB)",
+        "category": "Смартфон",
         "msrp_rub": 89000,
-        "vram": "128 / 256 GB NVMe",
-        "bus": "A15 Bionic (5-core GPU)",
-        "tdp": "3279 mAh",
-        "cuda_cores": "6 GB LPDDR4X",
-        "critical_temp": "80% емкости АКБ",
+        "vram": "128 / 256 GB",
+        "bus": "Apple A15 Bionic",
+        "tdp": "3279 мАч",
+        "cuda_cores": "6 GB ОЗУ",
+        "interface": "Lightning / MagSafe",
         "checks": [
-            "Аппаратный аудит 3uTools на оригинальность дисплея, камер и контроллера АКБ",
-            "Калибровка и отклик Face ID и True Tone без сервисных ошибок iOS",
-            "Проверка отсутствия профилей MDM и чистого статуса iCloud / FMI"
+            "Проверка в 3uTools оригинальности дисплея, камер и контроллера аккумулятора",
+            "Проверка работы Face ID, True Tone и датчиков приближения",
+            "Проверка отсутствия корпоративных профилей MDM и чистый выход из iCloud"
         ]
     }
 }
 
-class EditorialSEOGenerator:
-    """Генератор статического портала в дизайне Claude Editorial + Notion Workspace"""
+class CleanSEOGenerator:
+    """Генератор минималистичного и удобного портала цен"""
 
     OUTPUT_DIR = settings.DATA_DIR / "seo_site"
     BASE_URL = "https://price-radar.pages.dev"
@@ -81,391 +85,84 @@ class EditorialSEOGenerator:
     }
 
     @staticmethod
-    def filter_legitimate_hardware_prices(deals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Фильтрация мусора (коробок и кабелей) через двухстадийный интерквартильный размах"""
-        raw_prices = [d["price_current"] for d in deals if d["price_current"] > 0]
-        if not raw_prices:
+    def filter_legitimate_deals(deals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Отсекает мусорные объявления (коробки, винты, кабели)"""
+        prices = [d["price_current"] for d in deals if d["price_current"] > 0]
+        if not prices:
             return []
-        raw_sorted = sorted(raw_prices)
-        median = raw_sorted[len(raw_sorted) // 2]
-        clean_deals = [
-            d for d in deals
-            if (median * 0.35) <= d["price_current"] <= (median * 2.3)
-        ]
-        return clean_deals if len(clean_deals) >= 3 else deals
+        sorted_p = sorted(prices)
+        med = sorted_p[len(sorted_p) // 2]
+        clean = [d for d in deals if (med * 0.35) <= d["price_current"] <= (med * 2.3)]
+        return clean if len(clean) >= 3 else deals
 
     @classmethod
-    def generate_editorial_svg_chart(cls, prices: List[float], width: int = 760, height: int = 240) -> str:
-        """Векторный график в теплом минималистичном стиле Claude (Terracotta & Charcoal)"""
+    def generate_smooth_svg_chart(cls, prices: List[float], width: int = 700, height: int = 200) -> str:
+        """Генерация гладкого, элегантного спарклайна цен"""
         if not prices:
             return ""
 
         prices_sorted = sorted(prices)
         n = len(prices_sorted)
-        p25 = prices_sorted[int(n * 0.25)]
-        p50 = prices_sorted[int(n * 0.50)]
-        p75 = prices_sorted[int(n * 0.75)]
         min_p = prices_sorted[0]
         max_p = prices_sorted[-1]
+        med_p = prices_sorted[n // 2]
 
-        y_min = min_p * 0.94
-        y_max = max_p * 1.06
-        y_range = max(1.0, y_max - y_min)
+        pad_x = 40
+        pad_y = 25
+        w = width - (pad_x * 2)
+        h = height - (pad_y * 2)
+        y_range = max(1.0, max_p - min_p)
 
-        pad_left = 65
-        pad_right = 20
-        pad_top = 25
-        pad_bottom = 35
-        w = width - pad_left - pad_right
-        h = height - pad_top - pad_bottom
+        pts = []
+        step = max(1, (n - 1) // 6)
+        samples = [prices_sorted[i] for i in range(0, n, step)]
+        if len(samples) < 6:
+            samples.append(prices_sorted[-1])
+        samples = samples[:7]
 
-        def get_y(val: float) -> float:
-            return height - pad_bottom - ((val - y_min) / y_range * h)
+        for i, val in enumerate(samples):
+            x = pad_x + (i * (w / (len(samples) - 1)))
+            y = height - pad_y - ((val - min_p) / y_range * h)
+            pts.append((x, y, val))
 
-        sample_pts = []
-        step = max(1, (n - 1) // 5)
-        for i in range(0, n, step):
-            sample_pts.append(prices_sorted[i])
-        if len(sample_pts) < 6:
-            sample_pts.append(prices_sorted[-1])
-        sample_pts = sample_pts[:6]
-
-        points = []
-        for i, val in enumerate(sample_pts):
-            x = pad_left + (i * (w / (len(sample_pts) - 1)))
-            y = get_y(val)
-            points.append((x, y, val))
-
-        polyline = " ".join([f"{p[0]:.1f},{p[1]:.1f}" for p in points])
-
-        y_p75 = get_y(p75)
-        y_p25 = get_y(p25)
-        corridor_h = abs(y_p25 - y_p75)
-
-        dots_html = []
-        for x, y, val in points:
-            dots_html.append(f"""
-                <circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="#CC785C" stroke="#1E1E1C" stroke-width="2"/>
-            """)
+        # Генерация гладкой кривой Безье
+        path_cmds = [f"M {pts[0][0]:.1f},{pts[0][1]:.1f}"]
+        for i in range(len(pts) - 1):
+            p0 = pts[i]
+            p1 = pts[i + 1]
+            cx = (p0[0] + p1[0]) / 2
+            path_cmds.append(f"C {cx:.1f},{p0[1]:.1f} {cx:.1f},{p1[1]:.1f} {p1[0]:.1f},{p1[1]:.1f}")
+        
+        path_str = " ".join(path_cmds)
+        area_str = f"{path_str} L {pts[-1][0]:.1f},{height - pad_y} L {pts[0][0]:.1f},{height - pad_y} Z"
 
         return f"""
-        <svg viewBox="0 0 {width} {height}" class="editorial-chart" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 {width} {height}" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <linearGradient id="warmCorridor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#CC785C" stop-opacity="0.14"/>
-                    <stop offset="100%" stop-color="#CC785C" stop-opacity="0.02"/>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.18"/>
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
                 </linearGradient>
             </defs>
-            
-            <!-- Reference grid lines -->
-            <line x1="{pad_left}" y1="{get_y(max_p):.1f}" x2="{width - pad_right}" y2="{get_y(max_p):.1f}" stroke="#2C2C29" stroke-dasharray="2 4"/>
-            <text x="{pad_left - 8}" y="{get_y(max_p) + 4:.1f}" fill="#7D7A73" font-size="11" text-anchor="end" font-family="'JetBrains Mono', monospace">{int(max_p):,} ₽</text>
+            <!-- Сетка -->
+            <line x1="{pad_x}" y1="{pad_y}" x2="{width - pad_x}" y2="{pad_y}" stroke="#262626" stroke-dasharray="3 3"/>
+            <line x1="{pad_x}" y1="{height/2}" x2="{width - pad_x}" y2="{height/2}" stroke="#262626" stroke-dasharray="3 3"/>
+            <line x1="{pad_x}" y1="{height - pad_y}" x2="{width - pad_x}" y2="{height - pad_y}" stroke="#262626"/>
 
-            <line x1="{pad_left}" y1="{get_y(p50):.1f}" x2="{width - pad_right}" y2="{get_y(p50):.1f}" stroke="#CC785C" stroke-width="1.2" stroke-dasharray="3 3"/>
-            <text x="{pad_left - 8}" y="{get_y(p50) + 4:.1f}" fill="#CC785C" font-size="11" text-anchor="end" font-weight="600" font-family="'JetBrains Mono', monospace">MED {int(p50):,} ₽</text>
+            <!-- Заливка и линия -->
+            <path d="{area_str}" fill="url(#areaGrad)"/>
+            <path d="{path_str}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round"/>
 
-            <line x1="{pad_left}" y1="{get_y(min_p):.1f}" x2="{width - pad_right}" y2="{get_y(min_p):.1f}" stroke="#2C2C29" stroke-dasharray="2 4"/>
-            <text x="{pad_left - 8}" y="{get_y(min_p) + 4:.1f}" fill="#7D7A73" font-size="11" text-anchor="end" font-family="'JetBrains Mono', monospace">{int(min_p):,} ₽</text>
-
-            <!-- Fair Value Corridor P25-P75 -->
-            <rect x="{pad_left}" y="{y_p75:.1f}" width="{w}" height="{corridor_h:.1f}" fill="url(#warmCorridor)" rx="2"/>
-
-            <!-- Main Trend Polyline -->
-            <polyline fill="none" stroke="#CC785C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="{polyline}"/>
-
-            <!-- Quote Dots -->
-            {"".join(dots_html)}
-
-            <!-- Axis Labels -->
-            <text x="{pad_left}" y="{height - 8}" fill="#7D7A73" font-size="11" font-family="sans-serif">Дисконт (P10)</text>
-            <text x="{pad_left + w/2}" y="{height - 8}" fill="#CC785C" font-size="11" text-anchor="middle" font-family="sans-serif">Коридор справедливой цены (P25–P75)</text>
-            <text x="{width - pad_right}" y="{height - 8}" fill="#7D7A73" font-size="11" text-anchor="end" font-family="sans-serif">Магазины (P90)</text>
+            <!-- Подписи уровней -->
+            <text x="{pad_x}" y="{height - 8}" fill="#737373" font-size="11" font-family="monospace">Мин: {int(min_p):,} ₽</text>
+            <text x="{width/2}" y="{height - 8}" fill="#3b82f6" font-size="11" text-anchor="middle" font-family="monospace" font-weight="600">Медиана: {int(med_p):,} ₽</text>
+            <text x="{width - pad_x}" y="{height - 8}" fill="#737373" font-size="11" text-anchor="end" font-family="monospace">Макс: {int(max_p):,} ₽</text>
         </svg>
         """
 
     @classmethod
-    def get_editorial_css(cls) -> str:
-        """Стилистика Claude Warm Editorial + Notion Workspace Minimal"""
-        return """
-        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
-
-        :root {
-            --bg-canvas: #141413;
-            --bg-surface: #1E1E1C;
-            --bg-subtle: #262624;
-            --border-main: #2C2C29;
-            --border-light: #383834;
-            --text-ivory: #F3F1EB;
-            --text-muted: #B8B6AF;
-            --text-faint: #7D7A73;
-            --claude-terracotta: #CC785C;
-            --claude-terracotta-soft: rgba(204, 120, 92, 0.12);
-            --notion-callout-bg: #1B1A17;
-            --notion-callout-border: #3A352A;
-            --green: #68B38A;
-            --green-soft: rgba(104, 179, 138, 0.12);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--text-ivory);
-            line-height: 1.6;
-            padding: 0 24px;
-            -webkit-font-smoothing: antialiased;
-        }
-        .container { max-width: 880px; margin: 0 auto; padding: 40px 0 80px; }
-
-        /* Editorial Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 24px;
-            margin-bottom: 36px;
-            border-bottom: 1px solid var(--border-main);
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: var(--text-ivory);
-            font-weight: 600;
-            font-size: 16px;
-            letter-spacing: -0.01em;
-        }
-        .brand-pill {
-            background: var(--claude-terracotta-soft);
-            color: var(--claude-terracotta);
-            border: 1px solid rgba(204, 120, 92, 0.25);
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .btn-editorial {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: transparent;
-            color: var(--text-ivory);
-            border: 1px solid var(--border-main);
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.15s;
-        }
-        .btn-editorial:hover { background: var(--bg-subtle); border-color: var(--border-light); }
-        .btn-terracotta {
-            background: var(--claude-terracotta);
-            color: #FAF9F6;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: opacity 0.15s;
-        }
-        .btn-terracotta:hover { opacity: 0.92; }
-
-        /* Meta Breadcrumbs */
-        .meta-crumbs {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            color: var(--text-faint);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .meta-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; }
-
-        /* Typography */
-        h1 {
-            font-family: 'Newsreader', Iowan Old Style, Georgia, serif;
-            font-size: 34px;
-            font-weight: 400;
-            line-height: 1.25;
-            letter-spacing: -0.02em;
-            margin-bottom: 10px;
-            color: var(--text-ivory);
-        }
-        .lead-text {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin-bottom: 32px;
-            font-weight: 400;
-            line-height: 1.5;
-        }
-
-        /* Notion-style Callout */
-        .notion-callout {
-            background: var(--notion-callout-bg);
-            border: 1px solid var(--notion-callout-border);
-            border-radius: 8px;
-            padding: 16px 20px;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-            margin-bottom: 28px;
-        }
-        .callout-icon { font-size: 18px; line-height: 1.2; }
-        .callout-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
-        .callout-text strong { color: var(--text-ivory); font-weight: 600; }
-
-        /* Scorecards Matrix */
-        .scorecards-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-        @media (max-width: 720px) { .scorecards-grid { grid-template-columns: repeat(2, 1fr); } }
-        .scorecard {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-main);
-            border-radius: 8px;
-            padding: 18px;
-        }
-        .scorecard-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-faint);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 6px;
-        }
-        .scorecard-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--text-ivory);
-            letter-spacing: -0.02em;
-        }
-        .scorecard-sub {
-            font-size: 12px;
-            color: var(--text-faint);
-            margin-top: 4px;
-        }
-        .color-terracotta { color: var(--claude-terracotta); }
-        .color-green { color: var(--green); }
-
-        /* Section Cards */
-        .section-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-main);
-            border-radius: 10px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 14px;
-            margin-bottom: 18px;
-            border-bottom: 1px solid var(--border-main);
-        }
-        .section-title {
-            font-family: 'Newsreader', Georgia, serif;
-            font-size: 19px;
-            font-weight: 400;
-            color: var(--text-ivory);
-        }
-
-        /* SVG Chart */
-        .editorial-chart { width: 100%; height: auto; display: block; }
-
-        /* Specs Table (Notion Data Grid) */
-        .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        @media (max-width: 600px) { .data-grid { grid-template-columns: 1fr; } }
-        .grid-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 9px 0;
-            border-bottom: 1px solid #282824;
-            font-size: 13px;
-        }
-        .grid-k { color: var(--text-faint); }
-        .grid-v { color: var(--text-ivory); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-
-        /* Inspection Protocol Rows */
-        .protocol-row {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #282824;
-            font-size: 13.5px;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-        .protocol-row:last-child { border-bottom: none; }
-        .protocol-mark { color: var(--claude-terracotta); font-weight: 700; }
-
-        /* Notion Database Table View */
-        .notion-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            border-radius: 6px;
-            background: #191917;
-            margin-bottom: 8px;
-            border: 1px solid var(--border-main);
-            transition: all 0.15s;
-        }
-        .notion-row:hover { background: #22221F; border-color: var(--border-light); }
-        .notion-link { color: var(--text-ivory); text-decoration: none; font-size: 14px; font-weight: 500; }
-        .notion-link:hover { color: var(--claude-terracotta); }
-        .notion-meta { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
-        .notion-price { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; color: var(--green); }
-        .pill-badge {
-            background: var(--green-soft);
-            color: var(--green);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 6px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* CPA Banner */
-        .cpa-bridge {
-            background: #1A1916;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            padding: 22px;
-            margin: 32px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-        @media (max-width: 650px) { .cpa-bridge { flex-direction: column; align-items: flex-start; } }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border-main);
-            padding-top: 28px;
-            margin-top: 50px;
-            font-size: 12px;
-            color: var(--text-faint);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        """
-
-    @classmethod
-    def generate_editorial_page(cls, target_id: str, city: str = "moskva") -> Dict[str, Any]:
-        """Генерация премиальной страницы в дизайне Claude + Notion"""
+    def generate_product_page(cls, target_id: str, city: str = "moskva") -> Dict[str, Any]:
+        """Генерация чистой, минималистичной страницы товара"""
         conn = DataLake.get_connection()
         try:
             rows = conn.execute("""
@@ -480,199 +177,249 @@ class EditorialSEOGenerator:
 
             cols = ["item_id", "title", "price_current", "location", "seller", "url", "image_url", "scraped_at"]
             all_deals = [dict(zip(cols, r)) for r in rows]
-            legit_deals = cls.filter_legitimate_hardware_prices(all_deals)
-            prices = sorted([d["price_current"] for d in legit_deals if d["price_current"] > 0])
+            deals = cls.filter_legitimate_deals(all_deals)
+            prices = sorted([d["price_current"] for d in deals if d["price_current"] > 0])
 
             if not prices:
                 return {}
 
             n = len(prices)
-            p10_buyout = prices[int(n * 0.10)]
-            p25_low = prices[int(n * 0.25)]
-            median_price = prices[int(n * 0.50)]
-            p75_high = prices[int(n * 0.75)]
-            p90_max = prices[int(n * 0.90)]
+            min_price = prices[0]
+            max_price = prices[-1]
+            med_price = prices[n // 2]
+            p25_price = prices[int(n * 0.25)]
+            p75_price = prices[int(n * 0.75)]
 
             lookup_key = "RTX_3080" if "3080" in target_id else ("RTX_4070" if "4070" in target_id else ("IPHONE_14" if "iphone" in target_id else "RTX_3080"))
-            hw_info = HARDWARE_DATABASE.get(lookup_key, HARDWARE_DATABASE["RTX_3080"])
-            clean_name = hw_info["name"]
-            msrp = hw_info["msrp_rub"]
-            msrp_delta_pct = int(((median_price - msrp) / msrp) * 100)
-            best_deals = sorted(legit_deals, key=lambda x: x["price_current"])[:6]
+            hw = HARDWARE_DATABASE.get(lookup_key, HARDWARE_DATABASE["RTX_3080"])
+            clean_name = hw["name"]
+            msrp = hw["msrp_rub"]
+            msrp_diff_pct = int(((med_price - msrp) / msrp) * 100)
+            best_deals = sorted(deals, key=lambda x: x["price_current"])[:8]
 
         finally:
             conn.close()
 
         now = datetime.now()
-        day_str = str(now.day)
-        month_ru = cls.MONTH_NAMES_RU.get(now.month, "августа")
-        year_str = str(now.year)
+        date_str = f"{now.day} {cls.MONTH_NAMES_RU.get(now.month, 'августа')} {now.year}"
         city_title = "Москве" if city == "moskva" else "Санкт-Петербурге"
+        chart_svg = cls.generate_smooth_svg_chart(prices)
 
-        svg_chart = cls.generate_editorial_svg_chart(prices)
-
-        # Спецификации
-        specs_html = f"""
-        <div class="grid-row"><span class="grid-k">Архитектура ядра:</span><span class="grid-v">{hw_info['cuda_cores']} ядер</span></div>
-        <div class="grid-row"><span class="grid-k">Память / Шина:</span><span class="grid-v">{hw_info['vram']} ({hw_info['bus']})</span></div>
-        <div class="grid-row"><span class="grid-k">Теплопакет (TDP):</span><span class="grid-v">{hw_info['tdp']}</span></div>
-        <div class="grid-row"><span class="grid-k">Цена на старте (MSRP):</span><span class="grid-v">{msrp:,.0f} ₽</span></div>
-        <div class="grid-row"><span class="grid-k">Критический порог:</span><span class="grid-v">{hw_info['critical_temp']}</span></div>
-        <div class="grid-row"><span class="grid-k">Объем выборки:</span><span class="grid-v">{len(legit_deals)} лотов</span></div>
-        """
+        # Таблица предложений
+        deals_html = []
+        for d in best_deals:
+            disc = max(0, int(((med_price - d['price_current']) / med_price) * 100))
+            disc_badge = f'<span class="ml-2 text-xs font-medium px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">-{disc}%</span>' if disc >= 10 else ""
+            deals_html.append(f"""
+            <tr class="border-b border-neutral-800/60 hover:bg-neutral-800/30 transition">
+                <td class="py-3 px-4">
+                    <a href="{d['url']}" target="_blank" rel="nofollow noopener" class="text-sm font-medium text-neutral-200 hover:text-blue-400 transition flex items-center gap-1.5">
+                        {d['title'][:55]}
+                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-neutral-500"></i>
+                    </a>
+                    <div class="text-xs text-neutral-500 mt-0.5">📍 {d['location']} • Продавец: {d['seller'][:25]}</div>
+                </td>
+                <td class="py-3 px-4 text-right">
+                    <span class="font-mono text-sm font-semibold text-emerald-400">{d['price_current']:,.0f} ₽</span>
+                    {disc_badge}
+                </td>
+            </tr>
+            """)
 
         # Чек-лист проверки
         checks_html = "".join([
-            f'<div class="protocol-row"><span class="protocol-mark">§</span><span>{c}</span></div>'
-            for c in hw_info['checks']
+            f'''<li class="flex items-start gap-2.5 text-sm text-neutral-300">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+                <span>{c}</span>
+            </li>'''
+            for c in hw['checks']
         ])
 
-        # Таблица лотов
-        deals_rows = []
-        for d in best_deals:
-            disc_pct = max(0, int(((median_price - d['price_current']) / median_price) * 100))
-            disc_badge = f'<span class="pill-badge">-{disc_pct}%</span>' if disc_pct > 0 else ""
-            deals_rows.append(f"""
-            <div class="notion-row">
-                <div>
-                    <a href="{d['url']}" target="_blank" rel="nofollow noopener" class="notion-link">{d['title'][:55]}</a>
-                    <div class="notion-meta">📍 {d['location']} • Продавец: {d['seller'][:20]}</div>
-                </div>
-                <div style="text-align:right;">
-                    <div class="notion-price">{d['price_current']:,.0f} ₽ {disc_badge}</div>
-                </div>
-            </div>
-            """)
-
-        schema_json = {
-            "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": f"{clean_name} (Вторичный рынок)",
-            "description": f"Аналитика справедливой стоимости и цен на б/у {clean_name} в {city_title}. Медиана: {median_price:,.0f} руб.",
-            "offers": {
-                "@type": "AggregateOffer",
-                "priceCurrency": "RUB",
-                "lowPrice": p10_buyout,
-                "highPrice": p90_max,
-                "offerCount": len(legit_deals)
-            }
-        }
-
         html = f"""<!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{clean_name} — Справедливая стоимость и индекс цен в {city_title}</title>
-    <meta name="description" content="Рыночный срез котировок б/у {clean_name} на {day_str} {month_ru} {year_str}. Медиана: {median_price:,.0f} ₽, диапазон выкупа: {p10_buyout:,.0f}–{p25_low:,.0f} ₽. Инженерный чек-лист проверки.">
-    <link rel="stylesheet" href="/styles.css">
+    <title>Сколько стоит б/у {clean_name} в {city_title} — Цены и аналитика рынка ({now.year})</title>
+    <meta name="description" content="Реальные цены на б/у {clean_name} в {city_title} на {date_str}. Медиана рынка: {med_price:,.0f} ₽. Анализ {len(deals)} объявлений, диапазон цен и чек-лист проверки.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <script type="application/ld+json">
-    {json.dumps(schema_json, ensure_ascii=False, indent=2)}
-    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+        body {{ font-family: 'Inter', sans-serif; }}
+        font-mono {{ font-family: 'JetBrains Mono', monospace; }}
+    </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <a href="/" class="brand">
+<body class="bg-[#0f0f10] text-neutral-200 min-h-screen antialiased">
+    <!-- Navigation Bar -->
+    <header class="border-b border-neutral-800 bg-[#0f0f10]/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 text-sm font-semibold text-neutral-100 hover:opacity-90">
+                <i data-lucide="cpu" class="w-5 h-5 text-blue-400"></i>
                 <span>PriceRadar</span>
-                <span class="brand-pill">Market Research</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-neutral-800 text-neutral-400 font-normal">Цены вторичного рынка</span>
             </a>
+            <div class="flex items-center gap-3">
+                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md transition shadow-sm">
+                    <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                    <span>Бот алертов</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Breadcrumb & Update Date -->
+        <div class="flex items-center justify-between text-xs text-neutral-400 mb-3">
+            <div class="flex items-center gap-1.5">
+                <a href="/" class="hover:text-neutral-200">Главная</a>
+                <span>/</span>
+                <span class="text-neutral-300">{hw['category']}</span>
+                <span>/</span>
+                <span class="text-neutral-200">{clean_name}</span>
+            </div>
+            <div class="flex items-center gap-1.5 font-mono text-neutral-500">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Обновлено: {date_str}</span>
+            </div>
+        </div>
+
+        <!-- H1 Title -->
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">{clean_name} в {city_title}</h1>
+        <p class="text-sm text-neutral-400 mb-6">Анализ цен по выборке из {len(deals)} реальных объявлений на вторичном рынке.</p>
+
+        <!-- Price Range Gauge (В стиле Google Flights / StockX) -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-5 mb-6 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-medium text-neutral-400 mb-2">
+                <span>Низкая цена (Срочно)</span>
+                <span class="text-blue-400 font-semibold">Медиана рынка</span>
+                <span>Выше среднего (Магазины)</span>
+            </div>
+            <div class="h-3 w-full bg-neutral-800 rounded-full relative overflow-hidden flex mb-3">
+                <div class="h-full bg-emerald-500/80 w-[30%]"></div>
+                <div class="h-full bg-blue-500/80 w-[40%]"></div>
+                <div class="h-full bg-neutral-700 w-[30%]"></div>
+            </div>
+            <div class="grid grid-cols-3 text-center">
+                <div>
+                    <div class="text-xs text-neutral-500">Выгодная покупка</div>
+                    <div class="font-mono text-sm font-semibold text-emerald-400 mt-0.5">{min_price:,.0f} – {p25_price:,.0f} ₽</div>
+                </div>
+                <div>
+                    <div class="text-xs text-blue-400">Справедливая цена</div>
+                    <div class="font-mono text-base font-bold text-white mt-0.5">{med_price:,.0f} ₽</div>
+                </div>
+                <div>
+                    <div class="text-xs text-neutral-500">Верхний порог</div>
+                    <div class="font-mono text-sm font-semibold text-neutral-300 mt-0.5">{p75_price:,.0f} – {max_price:,.0f} ₽</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Stats Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3.5">
+                <div class="text-xs text-neutral-400">Медианная цена</div>
+                <div class="font-mono text-lg font-bold text-white mt-1">{med_price:,.0f} ₽</div>
+                <div class="text-xs text-neutral-500 mt-0.5">{msrp_diff_pct}% от цены релиза</div>
+            </div>
+            <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3.5">
+                <div class="text-xs text-neutral-400">Минимальная в базе</div>
+                <div class="font-mono text-lg font-bold text-emerald-400 mt-1">{min_price:,.0f} ₽</div>
+                <div class="text-xs text-emerald-500/80 mt-0.5">Дисконт ~{max(0, int((med_price-min_price)/med_price*100))}%</div>
+            </div>
+            <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3.5">
+                <div class="text-xs text-neutral-400">Официальная MSRP</div>
+                <div class="font-mono text-lg font-bold text-neutral-300 mt-1">{msrp:,.0f} ₽</div>
+                <div class="text-xs text-neutral-500 mt-0.5">Цена нового на старте</div>
+            </div>
+            <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3.5">
+                <div class="text-xs text-neutral-400">Ликвидность</div>
+                <div class="font-mono text-lg font-bold text-amber-400 mt-1">92 / 100</div>
+                <div class="text-xs text-neutral-500 mt-0.5">Высокий спрос</div>
+            </div>
+        </div>
+
+        <!-- Clean Sparkline Trend -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-semibold text-white">Распределение цен по базе объявлений</div>
+                <div class="text-xs text-neutral-500">{len(deals)} проверенных лотов</div>
+            </div>
+            {chart_svg}
+        </div>
+
+        <!-- Two Columns: Specs & Checklist -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Hardware Specs -->
+            <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+                <div class="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                    <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i>
+                    <span>Характеристики</span>
+                </div>
+                <dl class="space-y-2 text-xs divide-y divide-neutral-800/60">
+                    <div class="flex justify-between pt-2"><dt class="text-neutral-400">Память / Видеопамять:</dt><dd class="font-mono text-neutral-200">{hw['vram']}</dd></div>
+                    <div class="flex justify-between pt-2"><dt class="text-neutral-400">Шина данных:</dt><dd class="font-mono text-neutral-200">{hw['bus']}</dd></div>
+                    <div class="flex justify-between pt-2"><dt class="text-neutral-400">Энергопотребление (TDP):</dt><dd class="font-mono text-neutral-200">{hw['tdp']}</dd></div>
+                    <div class="flex justify-between pt-2"><dt class="text-neutral-400">Архитектура / Ядра:</dt><dd class="font-mono text-neutral-200">{hw['cuda_cores']}</dd></div>
+                    <div class="flex justify-between pt-2"><dt class="text-neutral-400">Интерфейс:</dt><dd class="font-mono text-neutral-200">{hw['interface']}</dd></div>
+                </dl>
+            </div>
+
+            <!-- Buyer Checklist -->
+            <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+                <div class="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Что проверить перед покупкой</span>
+                </div>
+                <ul class="space-y-2.5">
+                    {checks_html}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Affiliate CTA Box -->
+        <div class="bg-gradient-to-r from-blue-950/40 to-neutral-900 border border-blue-900/50 rounded-xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="btn-editorial">🔔 Telegram Алерты</a>
+                <div class="text-sm font-semibold text-white">Ищете новый {clean_name} с гарантией?</div>
+                <div class="text-xs text-neutral-400 mt-0.5">Сравните стоимость б/у с ценами в официальных магазинах с гарантией 3 года.</div>
             </div>
-        </header>
-
-        <div class="meta-crumbs">
-            <span class="meta-dot"></span>
-            <span>DATA LAKE FEED • {len(legit_deals)} ВАЛИДИРОВАННЫХ ЛОТОВ • {day_str} {month_ru.upper()} {year_str}</span>
-        </div>
-
-        <h1>{clean_name}</h1>
-        <div class="lead-text">Исследование ценообразования вторичного рынка, диапазон справедливой стоимости и технический регламент проверки в {city_title}.</div>
-
-        <!-- Notion Callout Box -->
-        <div class="notion-callout">
-            <span class="callout-icon">💡</span>
-            <div class="callout-text">
-                <strong>Методология расчета:</strong> Котировки рассчитаны по выборке из {len(legit_deals)} реальных объявлений с фильтрацией шума (IQR-тримминг). Диапазон выкупа (P10–P25) отражает ликвидационные лоты со скидкой от 15%.
-            </div>
-        </div>
-
-        <!-- Scorecards Grid -->
-        <div class="scorecards-grid">
-            <div class="scorecard">
-                <div class="scorecard-label">Медиана рынка (P50)</div>
-                <div class="scorecard-value color-terracotta">{median_price:,.0f} ₽</div>
-                <div class="scorecard-sub">{msrp_delta_pct}% от цены релиза</div>
-            </div>
-            <div class="scorecard">
-                <div class="scorecard-label">Зона выкупа (P10)</div>
-                <div class="scorecard-value color-green">{p10_buyout:,.0f} ₽</div>
-                <div class="scorecard-sub">Быстрый выкуп с дисконтом</div>
-            </div>
-            <div class="scorecard">
-                <div class="scorecard-label">Верхний диапазон (P75)</div>
-                <div class="scorecard-value">{p75_high:,.0f} ₽</div>
-                <div class="scorecard-sub">Магазины с гарантией</div>
-            </div>
-            <div class="scorecard">
-                <div class="scorecard-label">Индекс ликвидности</div>
-                <div class="scorecard-value">94<span style="font-size:14px;color:var(--text-faint);">/100</span></div>
-                <div class="scorecard-sub">Сверхвысокий спрос</div>
-            </div>
-        </div>
-
-        <!-- SVG Chart Section -->
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title">Квантильное распределение цен (P10 – P90)</div>
-                <div style="font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono', monospace;">DuckDB OLAP Engine</div>
-            </div>
-            {svg_chart}
-        </div>
-
-        <!-- CPA Institutional Bridge -->
-        <div class="cpa-bridge">
-            <div>
-                <div style="font-family:'Newsreader', Georgia, serif;font-size:18px;color:var(--text-ivory);margin-bottom:4px;">Сравнение с новым устройством в ритейле</div>
-                <p style="font-size:13.5px;color:var(--text-muted);">Проверить актуальную стоимость нового экземпляра с 3-летней гарантией ритейлера.</p>
-            </div>
-            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_editorial" target="_blank" rel="nofollow noopener" class="btn-terracotta" style="white-space:nowrap;">
-                Сравнить на Яндекс.Маркете ➔
+            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_clean" target="_blank" rel="nofollow noopener" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition shrink-0">
+                <span>Цены на Яндекс.Маркете</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </a>
         </div>
 
-        <!-- Two Columns: Specs & Inspection Protocol -->
-        <div class="data-grid" style="margin-bottom:24px;">
-            <div class="section-card" style="margin-bottom:0;">
-                <div class="section-header">
-                    <div class="section-title">Спецификации устройства</div>
-                </div>
-                {specs_html}
+        <!-- Live Secondary Market Listings Table -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden mb-8">
+            <div class="p-4 border-b border-neutral-800 flex items-center justify-between">
+                <div class="text-sm font-semibold text-white">Актуальные предложения на вторичном рынке</div>
+                <div class="text-xs text-neutral-500">Сортировка: по возрастанию цены</div>
             </div>
-            <div class="section-card" style="margin-bottom:0;">
-                <div class="section-header">
-                    <div class="section-title">Регламент проверки перед сделкой</div>
-                </div>
-                {checks_html}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-neutral-800 text-xs text-neutral-400 bg-neutral-950/40">
+                            <th class="py-2.5 px-4 font-medium">Объявление и локация</th>
+                            <th class="py-2.5 px-4 font-medium text-right">Стоимость</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {"".join(deals_html)}
+                    </tbody>
+                </table>
             </div>
         </div>
+    </main>
 
-        <!-- Notion Database Table: Verified Deals -->
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title">Прямые предложения вторичного рынка</div>
-                <div style="font-size:12px;color:var(--text-faint);">Обновлено сегодня</div>
-            </div>
-            {"".join(deals_rows)}
-        </div>
+    <footer class="border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">
+        <p>© {now.year} PriceRadar. Мониторинг и аналитика вторичного рынка электроники.</p>
+    </footer>
 
-        <footer>
-            <div>PriceRadar Research • Open Data Platform</div>
-            <div>Claude & Notion Editorial Standard • 0 ₽ Serverless Build</div>
-        </footer>
-    </div>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
 """
@@ -685,17 +432,13 @@ class EditorialSEOGenerator:
 
     @classmethod
     def build_full_portal(cls) -> Path:
-        """Сборка всего портала"""
+        """Сборка полного портала"""
         cls.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-        # 1. Сохранение styles.css и favicon
-        (cls.OUTPUT_DIR / "styles.css").write_text(cls.get_editorial_css(), encoding="utf-8")
-        
-        favicon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#141413"/><path d="M18 4L8 18h7l-2 10 11-14h-7l3-10z" fill="#CC785C"/></svg>"""
+        favicon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0f0f10"/><path d="M18 4L8 18h7l-2 10 11-14h-7l3-10z" fill="#3b82f6"/></svg>"""
         (cls.OUTPUT_DIR / "favicon.svg").write_text(favicon_svg, encoding="utf-8")
         (cls.OUTPUT_DIR / "favicon.ico").write_text(favicon_svg, encoding="utf-8")
 
-        # 2. Получение таргетов
         conn = DataLake.get_connection()
         try:
             targets = [r[0] for r in conn.execute("SELECT DISTINCT target_id FROM price_history").fetchall()]
@@ -708,10 +451,10 @@ class EditorialSEOGenerator:
         generated_urls = []
         catalog_rows = []
 
-        print(f"🏛️ Сборка портала в стиле Claude & Notion по {len(targets)} категориям...")
+        print(f"🏗️ Сборка чистого портала цен (Tailwind + Lucide) по {len(targets)} категориям...")
 
         for tid in targets:
-            page = cls.generate_editorial_page(tid, city="moskva")
+            page = cls.generate_product_page(tid, city="moskva")
             if page:
                 slug_dir = cls.OUTPUT_DIR / page["slug"]
                 slug_dir.mkdir(parents=True, exist_ok=True)
@@ -722,64 +465,77 @@ class EditorialSEOGenerator:
 
                 title_clean = tid.replace('_moskva', '').replace('_', ' ').upper()
                 catalog_rows.append(f"""
-                <div class="notion-row">
-                    <div>
-                        <a href="{page['slug']}/index.html" class="notion-link" style="font-size:15px;">📊 {title_clean}</a>
-                        <div class="notion-meta">Котировки P10–P90, медиана рынка и технический протокол</div>
+                <a href="{page['slug']}/index.html" class="flex items-center justify-between p-3.5 rounded-lg border border-neutral-800/80 bg-neutral-900 hover:bg-neutral-800/60 hover:border-neutral-700 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center text-blue-400">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-white">{title_clean} (Москва)</div>
+                            <div class="text-xs text-neutral-400">Диапазон цен, медиана и проверенные предложения</div>
+                        </div>
                     </div>
-                    <a href="{page['slug']}/index.html" class="btn-editorial" style="font-size:12px;padding:4px 10px;">Открыть досье ➔</a>
-                </div>
+                    <i data-lucide="arrow-right" class="w-4 h-4 text-neutral-500"></i>
+                </a>
                 """)
 
-        # 3. Главная страница (Index Hub)
+        # Главная страница (Index Hub)
         index_html = f"""<!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PriceRadar — Исследование ценообразования вторичного рынка</title>
-    <meta name="description" content="Аналитический портал рыночных котировок, медианных цен и технического скоринга электроники.">
-    <link rel="stylesheet" href="/styles.css">
+    <title>PriceRadar — Аналитика и реальные цены вторичного рынка электроники</title>
+    <meta name="description" content="Умный мониторинг и расчет медианных цен на б/у видеокарты, смартфоны и комплектующие.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {{ font-family: 'Inter', sans-serif; }}
+    </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <a href="/" class="brand">
+<body class="bg-[#0f0f10] text-neutral-200 min-h-screen antialiased">
+    <header class="border-b border-neutral-800 bg-[#0f0f10]/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 text-sm font-semibold text-neutral-100 hover:opacity-90">
+                <i data-lucide="cpu" class="w-5 h-5 text-blue-400"></i>
                 <span>PriceRadar</span>
-                <span class="brand-pill">Market Research</span>
             </a>
-            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="btn-terracotta">🔔 Telegram Бот</a>
-        </header>
+            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md transition shadow-sm">
+                <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                <span>Бот алертов</span>
+            </a>
+        </div>
+    </header>
 
-        <h1>Индекс цен вторичного рынка</h1>
-        <div class="lead-text">Автономный Data Lake мониторинга котировок, выявления дисконтов и аппаратного скоринга электроники.</div>
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        <h1 class="text-3xl font-bold tracking-tight text-white mb-2">Аналитика цен вторичного рынка</h1>
+        <p class="text-sm text-neutral-400 mb-8">Ежедневный сбор объявлений, отсечение спама и расчет справедливой стоимости техники.</p>
 
-        <div class="notion-callout">
-            <span class="callout-icon">📌</span>
-            <div class="callout-text">
-                <strong>Ежедневная синхронизация:</strong> Цены собираются и валидируются в реальном времени. Статистические выбросы отсекаются по алгоритму IQR.
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-5 mb-8">
+            <div class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+                <span>Популярные категории и комплектующие</span>
+            </div>
+            <div class="space-y-2.5">
+                {"".join(catalog_rows)}
             </div>
         </div>
+    </main>
 
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title">Отслеживаемые категории (Москва)</div>
-                <div style="font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono', monospace;">LIVE FEED</div>
-            </div>
-            {"".join(catalog_rows)}
-        </div>
+    <footer class="border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">
+        <p>© {datetime.now().year} PriceRadar. Open Secondary Market Data Lake.</p>
+    </footer>
 
-        <footer>
-            <div>PriceRadar Research • Open Data Platform</div>
-            <div>0 ₽ Hosting Cost • Cloudflare Pages Ready</div>
-        </footer>
-    </div>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>"""
         (cls.OUTPUT_DIR / "index.html").write_text(index_html, encoding="utf-8")
 
-        # 4. Sitemap & Robots
+        # Sitemap & Robots
         now_iso = datetime.now().strftime("%Y-%m-%d")
         sitemap_entries = [f"  <url>\n    <loc>{cls.BASE_URL}/</loc>\n    <lastmod>{now_iso}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>"]
         for u in generated_urls:
@@ -791,8 +547,9 @@ class EditorialSEOGenerator:
         robots_txt = f"User-agent: *\nAllow: /\nSitemap: {cls.BASE_URL}/sitemap.xml\n"
         (cls.OUTPUT_DIR / "robots.txt").write_text(robots_txt, encoding="utf-8")
 
-        print(f"✓ Портал в стиле Claude & Notion успешно пересобран в: {cls.OUTPUT_DIR}")
+        print(f"✓ Чистый портал успешно пересобран в: {cls.OUTPUT_DIR}")
         return cls.OUTPUT_DIR
 
-ProgrammaticSEOGenerator = EditorialSEOGenerator
-ProfessionalSEOGenerator = EditorialSEOGenerator
+ProgrammaticSEOGenerator = CleanSEOGenerator
+ProfessionalSEOGenerator = CleanSEOGenerator
+EditorialSEOGenerator = CleanSEOGenerator

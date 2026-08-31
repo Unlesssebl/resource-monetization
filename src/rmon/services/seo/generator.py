@@ -304,30 +304,30 @@ class MagazineArticleSEOGenerator:
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <!-- Masthead -->
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-baseline gap-2 text-sm text-[#181816] hover:opacity-80 transition">
-                <span class="font-serif-editorial text-xl tracking-tight font-medium">PriceRadar</span>
+        <div class="max-w-5xl mx-auto px-8 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-baseline gap-2.5 text-sm text-[#181816] hover:opacity-80 transition">
+                <span class="font-serif-editorial text-2xl tracking-tight font-medium">PriceRadar</span>
                 <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Issue 26</span>
             </a>
-            <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="flex items-center gap-6 text-xs font-mono">
                 <span class="text-[#8C887E]">г. Москва</span>
-                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-[#B85331] hover:underline underline-offset-4">
+                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-[#B85331] hover:underline underline-offset-4 font-medium">
                     Telegram Алерты ➔
                 </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-6 py-10">
+    <main class="max-w-5xl mx-auto px-8 py-14 sm:py-16">
         <!-- Article Category & Bylines -->
-        <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-3 border-b border-[#E3DFD5] mb-8">
+        <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-4 border-b border-[#E3DFD5] mb-12">
             <span>{hw['category'].upper()} • РЕДАКЦИОННОЕ ИССЛЕДОВАНИЕ</span>
             <span>ВЫПУСК ОТ {date_full.upper()}</span>
         </div>
 
         <!-- Article Headline Spread -->
-        <div class="mb-8">
-            <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.25rem] font-normal leading-[1.12] text-[#181816] tracking-tight mb-3">
+        <div class="mb-12">
+            <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.35rem] font-normal leading-[1.14] text-[#181816] tracking-tight mb-4">
                 {clean_name}: Анатомия вторичного рынка
             </h1>
             <p class="font-serif-editorial text-lg sm:text-xl italic text-[#5C5952] leading-relaxed max-w-3xl">
@@ -336,48 +336,48 @@ class MagazineArticleSEOGenerator:
         </div>
 
         <!-- Main 2-Column Editorial Spread -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-[#E3DFD5] mb-10 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 pb-16 border-b border-[#E3DFD5] mb-16 items-start">
             
             <!-- LEFT COLUMN (60%): The Narrative Article & Technical Dossier -->
-            <div class="lg:col-span-7 space-y-8">
+            <div class="lg:col-span-7 space-y-10">
                 
                 <!-- Lead Paragraph with Drop Cap -->
-                <div class="border-b border-[#E3DFD5] pb-6">
-                    <p class="drop-cap text-sm sm:text-base font-serif-editorial leading-relaxed text-[#2B2925]">
+                <div class="border-b border-[#E3DFD5] pb-8">
+                    <p class="drop-cap text-base sm:text-[1.06rem] font-serif-editorial leading-[1.8] text-[#2B2925]">
                         {hw['lead_paragraph']}
                     </p>
                 </div>
 
                 <!-- Editorial Pull-Quote -->
-                <blockquote class="border-l-2 border-[#B85331] pl-5 py-1 my-6">
-                    <p class="font-serif-editorial text-base sm:text-lg italic text-[#181816] leading-snug">
+                <blockquote class="border-l-2 border-[#B85331] pl-6 py-2 my-8">
+                    <p class="font-serif-editorial text-lg sm:text-xl italic text-[#181816] leading-snug">
                         «{hw['pull_quote']}»
                     </p>
-                    <cite class="block text-[11px] font-mono text-[#8C887E] not-italic mt-2">
+                    <cite class="block text-[11px] font-mono text-[#8C887E] not-italic mt-3">
                         — Лаборатория аналитики PriceRadar, срез рынка Москвы
                     </cite>
                 </blockquote>
 
                 <!-- Section I: Technical Specs -->
-                <div class="pt-2">
-                    <div class="flex items-baseline gap-2 mb-3 pb-1.5 border-b border-[#181816]">
+                <div class="pt-4">
+                    <div class="flex items-baseline gap-2.5 mb-4 pb-2 border-b border-[#181816]">
                         <span class="font-mono text-xs text-[#B85331] font-semibold">I.</span>
-                        <h2 class="font-serif-editorial text-base font-medium text-[#181816]">Паспорт устройства</h2>
+                        <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Паспорт устройства</h2>
                     </div>
                     <div class="space-y-0 text-xs">
-                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Архитектура ядра</span><span class="font-mono font-medium text-[#181816]">{hw['cuda_cores']}</span></div>
-                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Память и разрядность шины</span><span class="font-mono font-medium text-[#181816]">{hw['vram']} ({hw['bus']})</span></div>
-                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Тепловой пакет (TDP)</span><span class="font-mono font-medium text-[#181816]">{hw['tdp']}</span></div>
-                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Интерфейс подключения</span><span class="font-mono font-medium text-[#181816]">{hw['interface']}</span></div>
-                        <div class="flex justify-between py-2"><span class="text-[#8C887E]">Релизная цена производителя</span><span class="font-mono font-medium text-[#181816]">{msrp:,.0f} ₽</span></div>
+                        <div class="flex justify-between py-2.5 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Архитектура ядра</span><span class="font-mono font-medium text-[#181816]">{hw['cuda_cores']}</span></div>
+                        <div class="flex justify-between py-2.5 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Память и разрядность шины</span><span class="font-mono font-medium text-[#181816]">{hw['vram']} ({hw['bus']})</span></div>
+                        <div class="flex justify-between py-2.5 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Тепловой пакет (TDP)</span><span class="font-mono font-medium text-[#181816]">{hw['tdp']}</span></div>
+                        <div class="flex justify-between py-2.5 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Интерфейс подключения</span><span class="font-mono font-medium text-[#181816]">{hw['interface']}</span></div>
+                        <div class="flex justify-between py-2.5"><span class="text-[#8C887E]">Релизная цена производителя</span><span class="font-mono font-medium text-[#181816]">{msrp:,.0f} ₽</span></div>
                     </div>
                 </div>
 
                 <!-- Section II: Protocol -->
-                <div class="pt-2">
-                    <div class="flex items-baseline gap-2 mb-3 pb-1.5 border-b border-[#181816]">
+                <div class="pt-4">
+                    <div class="flex items-baseline gap-2.5 mb-4 pb-2 border-b border-[#181816]">
                         <span class="font-mono text-xs text-[#B85331] font-semibold">II.</span>
-                        <h2 class="font-serif-editorial text-base font-medium text-[#181816]">Регламент проверки перед сделкой</h2>
+                        <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Регламент проверки перед сделкой</h2>
                     </div>
                     <div>
                         {checks_html}
@@ -386,50 +386,52 @@ class MagazineArticleSEOGenerator:
             </div>
 
             <!-- RIGHT COLUMN (40%): Financial Analytics & Economist Infographic -->
-            <div class="lg:col-span-5 lg:border-l lg:border-[#E3DFD5] lg:pl-8 space-y-6">
+            <div class="lg:col-span-5 lg:border-l lg:border-[#E3DFD5] lg:pl-10 space-y-8">
                 <!-- Hero Median Price -->
-                <div class="pb-4 border-b border-[#E3DFD5]">
-                    <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider mb-1">Медиана рынка (Fair Value)</div>
+                <div class="pb-6 border-b border-[#E3DFD5]">
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider mb-1.5">Медиана рынка (Fair Value)</div>
                     <div class="font-mono text-4xl sm:text-5xl font-semibold text-[#181816] tracking-tight">
                         {med_price:,.0f} <span class="text-2xl font-light text-[#8C887E]">₽</span>
                     </div>
-                    <div class="text-xs font-mono text-[#B85331] mt-1">
+                    <div class="text-xs font-mono text-[#B85331] mt-1.5 font-medium">
                         {msrp_diff_pct}% относительно цены релиза ({msrp:,.0f} ₽)
                     </div>
                 </div>
 
                 <!-- The Economist Style Histogram -->
-                {histogram_html}
+                <div class="py-2">
+                    {histogram_html}
+                </div>
 
                 <!-- Contiguous Price Ranges -->
-                <div class="space-y-1.5 pt-2 text-xs font-mono border-t border-[#E3DFD5]">
-                    <div class="flex justify-between py-1.5 border-b border-[#E8E4DA]">
+                <div class="space-y-2 pt-3 text-xs font-mono border-t border-[#E3DFD5]">
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]">
                         <span class="text-[#5C5952]">Зона срочного выкупа:</span>
                         <span class="font-semibold text-[#181816]">{min_price:,.0f} – {p25_price:,.0f} ₽</span>
                     </div>
-                    <div class="flex justify-between py-1.5 border-b border-[#E8E4DA]">
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]">
                         <span class="text-[#B85331]">Справедливый коридор:</span>
                         <span class="font-semibold text-[#B85331]">{p25_price:,.0f} – {p75_price:,.0f} ₽</span>
                     </div>
-                    <div class="flex justify-between py-1.5">
+                    <div class="flex justify-between py-2">
                         <span class="text-[#8C887E]">Магазины с гарантией:</span>
                         <span class="text-[#8C887E]">{p75_price:,.0f} – {max_price:,.0f} ₽</span>
                     </div>
                 </div>
 
                 <!-- Editorial Verdict Card -->
-                <div class="border-t border-[#181816] pt-4 mt-4">
-                    <h3 class="font-serif-editorial text-sm font-medium text-[#181816] mb-2">Вердикт редакции</h3>
-                    <div class="space-y-3">
+                <div class="border-t border-[#181816] pt-6 mt-6">
+                    <h3 class="font-serif-editorial text-base font-medium text-[#181816] mb-3">Вердикт редакции</h3>
+                    <div class="space-y-4">
                         <div>
-                            <div class="text-[10px] font-mono uppercase text-[#B85331] tracking-wider mb-1">Сильные стороны:</div>
-                            <ul class="space-y-0.5">
+                            <div class="text-[10px] font-mono uppercase text-[#B85331] tracking-wider mb-1.5 font-semibold">Сильные стороны:</div>
+                            <ul class="space-y-1">
                                 {pros_html}
                             </ul>
                         </div>
                         <div>
-                            <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider mb-1">Факторы риска:</div>
-                            <ul class="space-y-0.5">
+                            <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider mb-1.5 font-semibold">Факторы риска:</div>
+                            <ul class="space-y-1">
                                 {cons_html}
                             </ul>
                         </div>
@@ -437,8 +439,8 @@ class MagazineArticleSEOGenerator:
                 </div>
 
                 <!-- Telegram Alert Trigger Button -->
-                <div class="pt-3">
-                    <a href="https://t.me/monitoringsuba_bot" target="_blank" class="block text-center text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] py-3 px-4 transition">
+                <div class="pt-4">
+                    <a href="https://t.me/monitoringsuba_bot" target="_blank" class="block text-center text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] py-3.5 px-5 transition shadow-sm">
                         🔔 Получать алерты при падении ниже {p25_price:,.0f} ₽
                     </a>
                 </div>
@@ -446,34 +448,34 @@ class MagazineArticleSEOGenerator:
         </div>
 
         <!-- Section III: Secondary Market Book Register (Full Width) -->
-        <div class="pb-10 border-b border-[#E3DFD5] mb-10">
-            <div class="flex items-baseline justify-between mb-4 pb-2 border-b border-[#181816]">
-                <div class="flex items-baseline gap-2">
+        <div class="pb-16 border-b border-[#E3DFD5] mb-16">
+            <div class="flex items-baseline justify-between mb-6 pb-2.5 border-b border-[#181816]">
+                <div class="flex items-baseline gap-2.5">
                     <span class="font-mono text-xs text-[#B85331] font-semibold">III.</span>
-                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Реестр предложений вторичного рынка</h2>
+                    <h2 class="font-serif-editorial text-xl font-medium text-[#181816]">Реестр предложений вторичного рынка</h2>
                 </div>
                 <span class="text-xs font-mono text-[#8C887E]">Сортировка: по возрастанию цены</span>
             </div>
-            <div>
+            <div class="divide-y divide-[#E8E4DA]">
                 {"".join(deals_html)}
             </div>
         </div>
 
         <!-- Section IV: Editorial Retail Bridge (CPA Box) -->
-        <div class="bg-[#F2EFE8] border border-[#E3DFD5] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="bg-[#F2EFE8] border border-[#E3DFD5] p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 my-8">
             <div>
-                <h3 class="font-serif-editorial text-base font-medium text-[#181816]">Сравнение с розничным ритейлом</h3>
-                <p class="text-xs text-[#5C5952] mt-0.5 max-w-md font-serif italic">
+                <h3 class="font-serif-editorial text-lg font-medium text-[#181816]">Сравнение с розничным ритейлом</h3>
+                <p class="text-xs text-[#5C5952] mt-1 max-w-md font-serif italic leading-relaxed">
                     Если вы рассматриваете покупку нового экземпляра с 3-летней официальной гарантией и кассовым чеком.
                 </p>
             </div>
-            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_magazine" target="_blank" rel="nofollow noopener" class="text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] px-4 py-2.5 transition shrink-0">
+            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_magazine" target="_blank" rel="nofollow noopener" class="text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] px-5 py-3 transition shrink-0 shadow-sm">
                 Каталог Яндекс.Маркета ➔
             </a>
         </div>
     </main>
 
-    <footer class="border-t border-[#E3DFD5] py-8 text-center text-xs font-serif italic text-[#8C887E]">
+    <footer class="border-t border-[#E3DFD5] py-12 text-center text-xs font-serif italic text-[#8C887E]">
         <p>PriceRadar Journal • Аналитическое бюро вторичного рынка электроники • {now.year}</p>
     </footer>
 </body>
@@ -553,38 +555,38 @@ class MagazineArticleSEOGenerator:
 </head>
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="font-serif-editorial text-xl tracking-tight font-medium text-[#181816]">
+        <div class="max-w-5xl mx-auto px-8 h-20 flex items-center justify-between">
+            <a href="/" class="font-serif-editorial text-2xl tracking-tight font-medium text-[#181816]">
                 PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
             </a>
-            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-xs font-mono text-[#B85331] hover:underline">
+            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-xs font-mono text-[#B85331] hover:underline font-medium">
                 Telegram Бот ➔
             </a>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-6 py-12">
-        <div class="pb-8 border-b border-[#E3DFD5] mb-8">
-            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-2">INDEX • 2026 EDITION</div>
-            <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal text-[#181816] tracking-tight mb-3">
+    <main class="max-w-5xl mx-auto px-8 py-16">
+        <div class="pb-10 border-b border-[#E3DFD5] mb-12">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-3">INDEX • 2026 EDITION</div>
+            <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.25rem] font-normal text-[#181816] tracking-tight mb-4">
                 Индекс цен вторичного рынка
             </h1>
-            <p class="text-sm font-serif-editorial italic text-[#5C5952] max-w-lg leading-relaxed">
+            <p class="text-base font-serif-editorial italic text-[#5C5952] max-w-xl leading-relaxed">
                 Периодическое аналитическое исследование котировок, справедливой стоимости и технического состояния потребительской электроники в Москве.
             </p>
         </div>
 
-        <div class="mb-12">
-            <div class="text-xs font-mono text-[#8C887E] uppercase tracking-wider mb-4 pb-2 border-b border-[#181816]">
+        <div class="mb-16">
+            <div class="text-xs font-mono text-[#8C887E] uppercase tracking-wider mb-6 pb-2.5 border-b border-[#181816]">
                 Реестр исследуемых категорий
             </div>
-            <div class="space-y-0">
+            <div class="space-y-0 divide-y divide-[#E8E4DA]">
                 {"".join(catalog_rows)}
             </div>
         </div>
     </main>
 
-    <footer class="border-t border-[#E3DFD5] py-8 text-center text-xs font-serif italic text-[#8C887E]">
+    <footer class="border-t border-[#E3DFD5] py-12 text-center text-xs font-serif italic text-[#8C887E]">
         <p>PriceRadar Journal • Open Data Initiative • {datetime.now().year}</p>
     </footer>
 </body>

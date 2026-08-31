@@ -1,11 +1,10 @@
 """
-Luxury Magazine & Editorial Print Design Generator (Cereal / Kinfolk / Monocle Style).
-Фундаментальная журнальная верстка на теплой бумаге:
-- Палитра теплой журнальной бумаги: #FAF8F5 (Ivory Paper), #181816 (Ink Black), #B85331 (Warm Cognac/Terracotta)
-- Типографика: Newsreader (Editorial Serif) + Inter / Geist (Grotesque) + JetBrains Mono
-- Композиция: Просторный журнальный разворот с монументальной цифрой медианы, 0 зажатых рамок карточек
-- Тонкие волосяные линии-разделители (#E3DFD5) и книжный реестр лотов
-- Кураторский блок розничного сравнения в эстетике премиального издания
+Luxury Magazine & Editorial Print Design Generator (Asymmetrical 60/40 Spread).
+Сбалансированная журнальная композиция:
+- Левая часть (60%): Заголовок, кураторское введение, Паспорт устройства и Регламент проверки
+- Правая часть (40%): Монолитный финансовый блок (32 000 ₽, понятная 5-столбчатая гистограмма распределения лотов, диапазоны цен)
+- Нижняя часть: Полный книжный реестр предложений вторичного рынка и ритейл-сноска
+- Теплая палитра: #FAF8F5 (Ivory Paper), #181816 (Ink Black), #B85331 (Warm Terracotta/Cognac)
 """
 import os
 import re
@@ -33,10 +32,10 @@ HARDWARE_DATABASE = {
         "cuda_cores": "8 704 ядра",
         "interface": "PCI Express 4.0 x16",
         "checks": [
-            "15-минутный тест в FurMark при разрешении 4K с контролем стабильности фреймрейта",
-            "Мониторинг температуры видеопамяти GDDR6X в HWiNFO64 (не должна превышать 94°C)",
+            "15-минутный стресс-тест в FurMark 4K с фиксацией стабильности фреймрейта и температур",
+            "Мониторинг температуры памяти GDDR6X в HWiNFO64 (не должна превышать 94°C)",
             "Визуальный осмотр крепежных винтов и пломб бэкплейта на следы механического вскрытия",
-            "Проверка акустического профиля вентиляторов на отсутствие люфта и резонанса при 100% оборотов"
+            "Проверка вентиляторов на отсутствие люфта, биения и посторонних шумов при 100% оборотов"
         ]
     },
     "RTX_4070": {
@@ -72,7 +71,7 @@ HARDWARE_DATABASE = {
 }
 
 class MagazineSEOGenerator:
-    """Генератор страниц в стиле премиального печатного журнала"""
+    """Генератор страниц в стиле асимметричного журнального разворота 60/40"""
 
     OUTPUT_DIR = settings.DATA_DIR / "seo_site"
     BASE_URL = "https://price-radar.pages.dev"
@@ -95,72 +94,70 @@ class MagazineSEOGenerator:
         return clean if len(clean) >= 3 else deals
 
     @classmethod
-    def generate_editorial_svg_chart(cls, prices: List[float], width: int = 760, height: int = 180) -> str:
-        """Изящная векторная кривая распределения цен в журнальной эстетике"""
+    def generate_histogram_bars(cls, prices: List[float]) -> str:
+        """
+        Генерация понятной гистограммы распределения лотов по 5 ценовым кластерам.
+        Показывает, где реально сосредоточено большинство объявлений.
+        """
         if not prices:
             return ""
 
         prices_sorted = sorted(prices)
         n = len(prices_sorted)
-        min_p = prices_sorted[0]
-        max_p = prices_sorted[-1]
-        med_p = prices_sorted[n // 2]
-
-        pad_x = 35
-        pad_y = 20
-        w = width - (pad_x * 2)
-        h = height - (pad_y * 2)
-        y_range = max(1.0, max_p - min_p)
-
-        pts = []
-        step = max(1, (n - 1) // 6)
-        samples = [prices_sorted[i] for i in range(0, n, step)]
-        if len(samples) < 6:
-            samples.append(prices_sorted[-1])
-        samples = samples[:7]
-
-        for i, val in enumerate(samples):
-            x = pad_x + (i * (w / (len(samples) - 1)))
-            y = height - pad_y - ((val - min_p) / y_range * h)
-            pts.append((x, y, val))
-
-        path_cmds = [f"M {pts[0][0]:.1f},{pts[0][1]:.1f}"]
-        for i in range(len(pts) - 1):
-            p0 = pts[i]
-            p1 = pts[i + 1]
-            cx = (p0[0] + p1[0]) / 2
-            path_cmds.append(f"C {cx:.1f},{p0[1]:.1f} {cx:.1f},{p1[1]:.1f} {p1[0]:.1f},{p1[1]:.1f}")
+        p90 = prices_sorted[int(n * 0.90)]
+        p10 = prices_sorted[int(n * 0.10)]
         
-        path_str = " ".join(path_cmds)
-        area_str = f"{path_str} L {pts[-1][0]:.1f},{height - pad_y} L {pts[0][0]:.1f},{height - pad_y} Z"
+        # Обрезаем единичные оверпрайс-выбросы для визуализации гистограммы
+        chart_prices = [p for p in prices_sorted if p <= p90 * 1.15]
+        min_p = chart_prices[0]
+        max_p = chart_prices[-1]
+        step = max(1000.0, (max_p - min_p) / 5)
+
+        bins = []
+        for i in range(5):
+            b_start = min_p + (i * step)
+            b_end = min_p + ((i + 1) * step)
+            count = sum(1 for p in chart_prices if (b_start <= p < b_end or (i == 4 and p >= b_start)))
+            bins.append((b_start, b_end, count))
+
+        max_count = max(1, max(b[2] for b in bins))
+        median = prices_sorted[n // 2]
+
+        bars_html = []
+        for b_start, b_end, count in bins:
+            is_median_bin = (b_start <= median <= b_end)
+            bar_height_pct = max(12, int((count / max_count) * 100))
+            
+            bar_color = "bg-[#B85331]" if is_median_bin else "bg-[#D8D3C5] hover:bg-[#B85331]/60"
+            text_color = "text-[#B85331] font-semibold" if is_median_bin else "text-[#8C887E]"
+            label_highlight = '<span class="text-[9px] uppercase tracking-wider text-[#B85331] block font-mono">Центр рынка</span>' if is_median_bin else ""
+
+            bars_html.append(f"""
+            <div class="flex-1 flex flex-col items-center justify-end h-32 group">
+                <div class="text-[11px] font-mono mb-1.5 {text_color}">{count} шт</div>
+                <div class="w-full {bar_color} rounded-t-sm transition-all" style="height: {bar_height_pct}%;"></div>
+                <div class="w-full border-t border-[#181816] pt-1.5 text-center mt-1">
+                    <div class="text-[10px] font-mono text-[#5C5952] whitespace-nowrap">{int(b_start/1000)}k–{int(b_end/1000)}k</div>
+                    {label_highlight}
+                </div>
+            </div>
+            """)
 
         return f"""
-        <svg viewBox="0 0 {width} {height}" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="magazineWarmArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#B85331" stop-opacity="0.10"/>
-                    <stop offset="100%" stop-color="#B85331" stop-opacity="0.0"/>
-                </linearGradient>
-            </defs>
-            <!-- Волосяные направляющие -->
-            <line x1="{pad_x}" y1="{pad_y}" x2="{width - pad_x}" y2="{pad_y}" stroke="#E3DFD5" stroke-dasharray="2 3"/>
-            <line x1="{pad_x}" y1="{height/2}" x2="{width - pad_x}" y2="{height/2}" stroke="#E3DFD5" stroke-dasharray="2 3"/>
-            <line x1="{pad_x}" y1="{height - pad_y}" x2="{width - pad_x}" y2="{height - pad_y}" stroke="#D1CCC0"/>
-
-            <!-- Заливка и контур кривой -->
-            <path d="{area_str}" fill="url(#magazineWarmArea)"/>
-            <path d="{path_str}" fill="none" stroke="#B85331" stroke-width="1.8" stroke-linecap="round"/>
-
-            <!-- Метки котировок -->
-            <text x="{pad_x}" y="{height - 6}" fill="#8C887E" font-size="11" font-family="'JetBrains Mono', monospace">Мин. {int(min_p):,} ₽</text>
-            <text x="{width/2}" y="{height - 6}" fill="#B85331" font-size="11" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="600">Медиана: {int(med_p):,} ₽</text>
-            <text x="{width - pad_x}" y="{height - 6}" fill="#8C887E" font-size="11" text-anchor="end" font-family="'JetBrains Mono', monospace">Макс. {int(max_p):,} ₽</text>
-        </svg>
+        <div class="bg-[#F2EFE8] border border-[#E3DFD5] p-5 my-4">
+            <div class="flex items-baseline justify-between mb-3 pb-2 border-b border-[#E3DFD5]">
+                <div class="text-xs font-serif-editorial font-medium text-[#181816]">Распределение предложений по ценам</div>
+                <div class="text-[10px] font-mono text-[#8C887E]">{len(prices)} объявлений</div>
+            </div>
+            <div class="flex items-end gap-2 pt-2">
+                {"".join(bars_html)}
+            </div>
+        </div>
         """
 
     @classmethod
     def generate_product_page(cls, target_id: str, city: str = "moskva") -> Dict[str, Any]:
-        """Генерация страницы-разворота в стиле дорогого издания"""
+        """Генерация сбалансированного разворота 60/40"""
         conn = DataLake.get_connection()
         try:
             rows = conn.execute("""
@@ -201,7 +198,7 @@ class MagazineSEOGenerator:
         now = datetime.now()
         date_full = f"{now.day} {cls.MONTH_NAMES_RU.get(now.month, 'августа')} {now.year}"
         city_title = "Москве" if city == "moskva" else "Санкт-Петербурге"
-        chart_svg = cls.generate_editorial_svg_chart(prices)
+        histogram_html = cls.generate_histogram_bars(prices)
 
         # Реестр лотов в книжном стиле
         deals_html = []
@@ -209,10 +206,10 @@ class MagazineSEOGenerator:
             disc = max(0, int(((med_price - d['price_current']) / med_price) * 100))
             disc_badge = f'<span class="text-xs font-mono text-[#B85331] font-medium ml-2">-{disc}%</span>' if disc >= 10 else ""
             deals_html.append(f"""
-            <div class="flex items-baseline justify-between py-3.5 border-b border-[#E8E4DA] group hover:border-[#B85331] transition-colors">
+            <div class="flex items-baseline justify-between py-3 border-b border-[#E8E4DA] group hover:border-[#B85331] transition-colors">
                 <div class="pr-4">
                     <a href="{d['url']}" target="_blank" rel="nofollow noopener" class="text-sm font-medium text-[#181816] group-hover:text-[#B85331] transition-colors inline-flex items-center gap-1">
-                        <span>{d['title'][:55]}</span>
+                        <span>{d['title'][:60]}</span>
                         <span class="text-xs text-[#8C887E] group-hover:translate-x-0.5 transition-transform">↗</span>
                     </a>
                     <div class="text-xs text-[#8C887E] mt-0.5 font-serif italic">{d['location']} • Продавец: {d['seller'][:20]}</div>
@@ -252,7 +249,7 @@ class MagazineSEOGenerator:
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <!-- Header: Editorial Masthead -->
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="/" class="flex items-baseline gap-2 text-sm text-[#181816] hover:opacity-80 transition">
                 <span class="font-serif-editorial text-lg tracking-tight font-medium">PriceRadar</span>
                 <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Vol. 26</span>
@@ -266,97 +263,96 @@ class MagazineSEOGenerator:
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-12">
+    <main class="max-w-5xl mx-auto px-6 py-10">
         <!-- Meta Label -->
-        <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-4 border-b border-[#E3DFD5] mb-8">
+        <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-3 border-b border-[#E3DFD5] mb-8">
             <span>{hw['category'].upper()} • АНАЛИТИЧЕСКИЙ СРЕЗ</span>
             <span>ВЫПУСК ОТ {date_full.upper()}</span>
         </div>
 
-        <!-- Hero Section: Magazine Spread -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-baseline pb-10 border-b border-[#E3DFD5] mb-10">
-            <div class="md:col-span-7">
-                <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal leading-[1.15] text-[#181816] tracking-tight mb-4">
-                    {clean_name}
-                </h1>
-                <p class="text-sm font-serif-editorial italic text-[#5C5952] leading-relaxed max-w-lg">
-                    Исследование справедливой рыночной стоимости и динамики ценообразования на вторичном рынке {city_title}. Расчет произведен на основе выборки из {len(deals)} подтвержденных лотов.
-                </p>
-            </div>
-            <div class="md:col-span-5 md:text-right border-t md:border-t-0 border-[#E3DFD5] pt-4 md:pt-0">
-                <div class="text-[11px] font-mono uppercase text-[#8C887E] tracking-wider mb-1">Медиана рынка (Fair Value)</div>
-                <div class="font-mono text-4xl sm:text-5xl font-semibold text-[#181816] tracking-tight">
-                    {med_price:,.0f} <span class="text-2xl font-light text-[#8C887E]">₽</span>
-                </div>
-                <div class="text-xs font-mono text-[#B85331] mt-1.5">
-                    {msrp_diff_pct}% относительно стартовой цены ({msrp:,.0f} ₽)
-                </div>
-            </div>
-        </div>
-
-        <!-- Editorial Overview: 3 Numbers with Horizontal Rule -->
-        <div class="grid grid-cols-3 gap-6 py-6 border-b border-[#E3DFD5] mb-10 text-center md:text-left">
-            <div>
-                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Зона срочного выкупа</div>
-                <div class="font-mono text-base font-semibold text-[#181816] mt-1">{min_price:,.0f} – {p25_price:,.0f} ₽</div>
-                <div class="text-[11px] text-[#5C5952] mt-0.5">Дисконт 15–35%</div>
-            </div>
-            <div class="border-x border-[#E3DFD5] px-4">
-                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Справедливый коридор</div>
-                <div class="font-mono text-base font-semibold text-[#B85331] mt-1">{p25_price:,.0f} – {p75_price:,.0f} ₽</div>
-                <div class="text-[11px] text-[#5C5952] mt-0.5">Основной объем сделок</div>
-            </div>
-            <div>
-                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Верхний диапазон</div>
-                <div class="font-mono text-base font-semibold text-[#181816] mt-1">{p75_price:,.0f} – {max_price:,.0f} ₽</div>
-                <div class="text-[11px] text-[#5C5952] mt-0.5">Магазины с гарантией</div>
-            </div>
-        </div>
-
-        <!-- Section: Price Distribution Sparkline -->
-        <div class="pb-10 border-b border-[#E3DFD5] mb-10">
-            <div class="flex items-baseline justify-between mb-4">
-                <h2 class="font-serif-editorial text-xl font-medium text-[#181816]">Кривая плотности котировок</h2>
-                <span class="text-xs font-mono text-[#8C887E]">{len(deals)} верифицированных лотов</span>
-            </div>
-            <div class="py-2">
-                {chart_svg}
-            </div>
-            <p class="text-xs text-[#8C887E] font-serif italic mt-3">
-                * Статистический расчет выполнен по алгоритму интерквартильного размаха (IQR) с исключением выбросов и аксессуаров.
-            </p>
-        </div>
-
-        <!-- Two Columns: Technical Spec & Inspection Protocol -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 pb-10 border-b border-[#E3DFD5] mb-10">
-            <!-- Column 1: Technical Spec -->
-            <div>
-                <div class="flex items-baseline gap-2 mb-4 pb-2 border-b border-[#181816]">
-                    <span class="font-mono text-xs text-[#B85331] font-semibold">I.</span>
-                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Паспорт устройства</h2>
-                </div>
-                <div class="space-y-0 text-xs">
-                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Архитектура чипа</span><span class="font-mono font-medium text-[#181816]">{hw['cuda_cores']}</span></div>
-                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Объем и тип памяти</span><span class="font-mono font-medium text-[#181816]">{hw['vram']} ({hw['bus']})</span></div>
-                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Потребление энергии (TDP)</span><span class="font-mono font-medium text-[#181816]">{hw['tdp']}</span></div>
-                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Интерфейс подключения</span><span class="font-mono font-medium text-[#181816]">{hw['interface']}</span></div>
-                    <div class="flex justify-between py-2"><span class="text-[#8C887E]">Цена релиза производителя</span><span class="font-mono font-medium text-[#181816]">{msrp:,.0f} ₽</span></div>
-                </div>
-            </div>
-
-            <!-- Column 2: Protocol -->
-            <div>
-                <div class="flex items-baseline gap-2 mb-4 pb-2 border-b border-[#181816]">
-                    <span class="font-mono text-xs text-[#B85331] font-semibold">II.</span>
-                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Регламент проверки перед сделкой</h2>
-                </div>
+        <!-- 60/40 Asymmetrical Spread Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-[#E3DFD5] mb-10 items-start">
+            
+            <!-- LEFT COLUMN (60%): Editorial Context, Specs & Protocol -->
+            <div class="lg:col-span-7 space-y-8">
                 <div>
-                    {checks_html}
+                    <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal leading-[1.12] text-[#181816] tracking-tight mb-3">
+                        {clean_name}
+                    </h1>
+                    <p class="text-sm font-serif-editorial italic text-[#5C5952] leading-relaxed">
+                        Исследование справедливой рыночной стоимости на вторичном рынке {city_title}. Анализ выполнен по выборке из {len(deals)} верифицированных лотов.
+                    </p>
+                </div>
+
+                <!-- Section I: Technical Specs -->
+                <div class="pt-2">
+                    <div class="flex items-baseline gap-2 mb-3 pb-1.5 border-b border-[#181816]">
+                        <span class="font-mono text-xs text-[#B85331] font-semibold">I.</span>
+                        <h2 class="font-serif-editorial text-base font-medium text-[#181816]">Паспорт устройства</h2>
+                    </div>
+                    <div class="space-y-0 text-xs">
+                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Архитектура чипа</span><span class="font-mono font-medium text-[#181816]">{hw['cuda_cores']}</span></div>
+                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Объем и тип памяти</span><span class="font-mono font-medium text-[#181816]">{hw['vram']} ({hw['bus']})</span></div>
+                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Потребление энергии (TDP)</span><span class="font-mono font-medium text-[#181816]">{hw['tdp']}</span></div>
+                        <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Интерфейс подключения</span><span class="font-mono font-medium text-[#181816]">{hw['interface']}</span></div>
+                        <div class="flex justify-between py-2"><span class="text-[#8C887E]">Цена релиза производителя</span><span class="font-mono font-medium text-[#181816]">{msrp:,.0f} ₽</span></div>
+                    </div>
+                </div>
+
+                <!-- Section II: Protocol -->
+                <div class="pt-2">
+                    <div class="flex items-baseline gap-2 mb-3 pb-1.5 border-b border-[#181816]">
+                        <span class="font-mono text-xs text-[#B85331] font-semibold">II.</span>
+                        <h2 class="font-serif-editorial text-base font-medium text-[#181816]">Регламент проверки перед сделкой</h2>
+                    </div>
+                    <div>
+                        {checks_html}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN (40%): Monolithic Financial & Histogram Card -->
+            <div class="lg:col-span-5 bg-[#FAF8F5] lg:border-l lg:border-[#E3DFD5] lg:pl-8 space-y-6">
+                <!-- Hero Price Number -->
+                <div class="pb-4 border-b border-[#E3DFD5]">
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider mb-1">Медиана рынка (Fair Value)</div>
+                    <div class="font-mono text-4xl sm:text-5xl font-semibold text-[#181816] tracking-tight">
+                        {med_price:,.0f} <span class="text-2xl font-light text-[#8C887E]">₽</span>
+                    </div>
+                    <div class="text-xs font-mono text-[#B85331] mt-1">
+                        {msrp_diff_pct}% относительно цены релиза ({msrp:,.0f} ₽)
+                    </div>
+                </div>
+
+                <!-- Binned Histogram Component -->
+                {histogram_html}
+
+                <!-- Contiguous Price Ranges -->
+                <div class="space-y-2 pt-1 text-xs font-mono">
+                    <div class="flex justify-between py-1.5 border-b border-[#E8E4DA]">
+                        <span class="text-[#5C5952]">Зона срочного выкупа:</span>
+                        <span class="font-semibold text-[#181816]">{min_price:,.0f} – {p25_price:,.0f} ₽</span>
+                    </div>
+                    <div class="flex justify-between py-1.5 border-b border-[#E8E4DA]">
+                        <span class="text-[#B85331]">Справедливый коридор:</span>
+                        <span class="font-semibold text-[#B85331]">{p25_price:,.0f} – {p75_price:,.0f} ₽</span>
+                    </div>
+                    <div class="flex justify-between py-1.5">
+                        <span class="text-[#8C887E]">Магазины с гарантией:</span>
+                        <span class="text-[#8C887E]">{p75_price:,.0f} – {max_price:,.0f} ₽</span>
+                    </div>
+                </div>
+
+                <!-- Telegram Alert Trigger Button -->
+                <div class="pt-2">
+                    <a href="https://t.me/monitoringsuba_bot" target="_blank" class="block text-center text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] py-3 px-4 transition">
+                        🔔 Получать алерты при падении ниже {p25_price:,.0f} ₽
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Section: Secondary Market Book Register -->
+        <!-- Section III: Secondary Market Book Register (Full Width) -->
         <div class="pb-10 border-b border-[#E3DFD5] mb-10">
             <div class="flex items-baseline justify-between mb-4 pb-2 border-b border-[#181816]">
                 <div class="flex items-baseline gap-2">
@@ -370,7 +366,7 @@ class MagazineSEOGenerator:
             </div>
         </div>
 
-        <!-- Editorial Retail Bridge (CPA Box) -->
+        <!-- Section IV: Editorial Retail Bridge (CPA Box) -->
         <div class="bg-[#F2EFE8] border border-[#E3DFD5] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                 <h3 class="font-serif-editorial text-base font-medium text-[#181816]">Сравнение с розничным ритейлом</h3>
@@ -384,7 +380,6 @@ class MagazineSEOGenerator:
         </div>
     </main>
 
-    <!-- Editorial Footer -->
     <footer class="border-t border-[#E3DFD5] py-8 text-center text-xs font-serif italic text-[#8C887E]">
         <p>PriceRadar Journal • Аналитическое бюро вторичного рынка электроники • {now.year}</p>
     </footer>
@@ -419,7 +414,7 @@ class MagazineSEOGenerator:
         generated_urls = []
         catalog_rows = []
 
-        print(f"📖 Сборка журнала PriceRadar (Cereal & Monocle Style) по {len(targets)} категориям...")
+        print(f"📖 Сборка журнала PriceRadar (Разворот 60/40 + Гистограмма) по {len(targets)} категориям...")
 
         for tid in targets:
             page = cls.generate_product_page(tid, city="moskva")
@@ -446,7 +441,7 @@ class MagazineSEOGenerator:
                 </div>
                 """)
 
-        # Главная страница журнала (Masthead Index)
+        # Главная страница журнала
         index_html = f"""<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -465,7 +460,7 @@ class MagazineSEOGenerator:
 </head>
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="/" class="font-serif-editorial text-xl tracking-tight font-medium text-[#181816]">
                 PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
             </a>
@@ -475,7 +470,7 @@ class MagazineSEOGenerator:
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-12">
+    <main class="max-w-5xl mx-auto px-6 py-12">
         <div class="pb-8 border-b border-[#E3DFD5] mb-8">
             <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-2">INDEX • 2026 EDITION</div>
             <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal text-[#181816] tracking-tight mb-3">
@@ -515,7 +510,7 @@ class MagazineSEOGenerator:
         robots_txt = f"User-agent: *\nAllow: /\nSitemap: {cls.BASE_URL}/sitemap.xml\n"
         (cls.OUTPUT_DIR / "robots.txt").write_text(robots_txt, encoding="utf-8")
 
-        print(f"✓ Журнал успешно пересобран в: {cls.OUTPUT_DIR}")
+        print(f"✓ Журнальный портал успешно пересобран в: {cls.OUTPUT_DIR}")
         return cls.OUTPUT_DIR
 
 ProgrammaticSEOGenerator = MagazineSEOGenerator

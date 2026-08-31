@@ -671,37 +671,146 @@ class MagazineArticleSEOGenerator:
 
     <main class="max-w-6xl mx-auto px-8 py-16">
         <div class="pb-10 border-b border-[#E3DFD5] mb-12">
-            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-3">INDEX • 2026 EDITION</div>
+            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-3">PRICE RADAR • 2026 SOVEREIGN EDITION</div>
             <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.25rem] font-normal text-[#181816] tracking-tight mb-4">
-                Индекс цен вторичного рынка & Инженерные утилиты
+                Индекс цен вторичного рынка & AI-Калькуляторы
             </h1>
             <p class="text-base font-serif-editorial italic text-[#5C5952] max-w-2xl leading-relaxed">
-                Открытая платформа аппаратного анализа, расчета стоимости 1 FPS и технической верификации потребительской электроники на базе DuckDB Data Lake.
+                Самоадаптивная платформа аппаратного анализа, расчета отдачи на 1 рубль и технической верификации потребительской электроники на базе DuckDB Data Lake.
             </p>
         </div>
 
-        <!-- 🧮 ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР 1 FPS -->
+        <!-- 🔍 1. DUAL-MODE HERO: УМНЫЙ ПОИСК И ПРОВЕРКА ССЫЛОК АВИТО -->
+        <div class="mb-14 p-8 border border-[#E3DFD5] bg-[#FFFFFF] rounded-sm shadow-sm">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-[#B85331] font-semibold mb-2">NEURAL MARKET RADAR • ZERO-TOUCH</div>
+                <h2 class="font-serif-editorial text-3xl font-medium text-[#181816] tracking-tight mb-2">
+                    Проверьте справедливую цену перед сделкой
+                </h2>
+                <p class="text-xs sm:text-sm font-serif italic text-[#5C5952] mb-6">
+                    Введите название модели (GPU, CPU, Apple, Консоли) или вставьте прямую ссылку на объявление с Авито:
+                </p>
+                <div class="relative flex items-center">
+                    <input type="text" id="smartInput" placeholder="Например: RTX 4070 Super, Ryzen 7800X3D или ссылка https://avito.ru/..." class="w-full bg-[#FAF8F5] border-2 border-[#181816] p-4 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331] pr-32 rounded-sm placeholder:text-[#8C887E]" oninput="handleSmartInput()">
+                    <button onclick="handleSmartSubmit()" class="absolute right-2 px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono tracking-wider hover:bg-[#181816] transition-colors rounded-sm shadow-sm">
+                        Проверить ➔
+                    </button>
+                </div>
+                <div id="pastePrompt" class="hidden mt-4 p-4 bg-[#FAF8F5] border border-[#B85331] text-left text-xs font-mono text-[#181816] flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-sm">
+                    <span>⚡ Обнаружена ссылка Авито! Нажмите для отправки на глубокий AI-аудит рисков и прогрева чипа:</span>
+                    <a id="botDeepLink" href="https://t.me/monitoringsuba_bot" target="_blank" class="px-4 py-2 bg-[#181816] text-white hover:bg-[#B85331] transition rounded-sm text-center shrink-0">Открыть в Telegram-боте ↗</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🎯 2. ИНТЕРАКТИВНЫЙ МАСТЕР ПОДБОРА ПО БЮДЖЕТУ (SMART VALUE ADVISOR) -->
+        <div class="mb-14 p-8 border border-[#E3DFD5] bg-[#FFFFFF] rounded-sm shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E3DFD5] pb-4 mb-6">
+                <div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-[#B85331]">SMART VALUE ADVISOR • AI ENGINE</div>
+                    <h2 class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">Мастер подбора под ваш бюджет и задачи</h2>
+                </div>
+                <div class="text-xs font-mono text-[#8C887E] mt-2 sm:mt-0">Максимум отдачи на 1 рубль</div>
+            </div>
+
+            <!-- Quiz Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-mono uppercase text-[#8C887E]">Ваш бюджет:</label>
+                        <span id="budgetValue" class="font-mono text-lg font-bold text-[#B85331]">65 000 ₽</span>
+                    </div>
+                    <input type="range" id="budgetRange" min="20000" max="150000" step="5000" value="65000" class="w-full accent-[#B85331] cursor-pointer" oninput="updateAdvisor()">
+                    <div class="flex justify-between text-[10px] font-mono text-[#8C887E] mt-1">
+                        <span>20 000 ₽</span>
+                        <span>65 000 ₽</span>
+                        <span>150 000 ₽+</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Основной сценарий:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setTask('gaming_1440p')" id="btn_gaming_1440p" class="task-btn p-2.5 text-xs font-mono text-left border border-[#181816] bg-[#181816] text-[#FAF8F5] rounded-sm transition-colors">🎮 1440p / 4K Ultra</button>
+                        <button onclick="setTask('esports_1080p')" id="btn_esports_1080p" class="task-btn p-2.5 text-xs font-mono text-left border border-[#E3DFD5] bg-[#FAF8F5] text-[#181816] hover:border-[#181816] rounded-sm transition-colors">⚡ Киберспорт 1080p</button>
+                        <button onclick="setTask('workstation')" id="btn_workstation" class="task-btn p-2.5 text-xs font-mono text-left border border-[#E3DFD5] bg-[#FAF8F5] text-[#181816] hover:border-[#181816] rounded-sm transition-colors">💻 Монтаж 4K & AI</button>
+                        <button onclick="setTask('portable')" id="btn_portable" class="task-btn p-2.5 text-xs font-mono text-left border border-[#E3DFD5] bg-[#FAF8F5] text-[#181816] hover:border-[#181816] rounded-sm transition-colors">📱 Steam Deck / Mac</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advisor Comparison Result Card -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-[#FAF8F5] border border-[#E8E4DA] rounded-sm">
+                <!-- Secondary Market Option -->
+                <div class="p-5 bg-[#FFFFFF] border border-[#E3DFD5] rounded-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-mono uppercase text-[#2E6F40] bg-[#2E6F40]/10 px-2 py-0.5 font-semibold rounded-sm">Б/у Фаворит (Максимум FPS/₽)</span>
+                            <span id="advisorUsedPrice" class="font-mono text-lg font-bold text-[#181816]">45 000 ₽</span>
+                        </div>
+                        <h3 id="advisorUsedTitle" class="font-serif-editorial text-xl font-medium text-[#181816]">RTX 3080 (10 GB) б/у</h3>
+                        <p id="advisorUsedDesc" class="text-xs text-[#5C5952] font-serif italic mt-2">Дает производительность уровня новой карты за 75k ₽, экономя 30 000 ₽.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-[#E8E4DA] flex items-center justify-between">
+                        <span class="text-[10px] font-mono text-[#8C887E]">Зона риска: Память GDDR6X</span>
+                        <a href="prices/moskva/rtx_3080_moskva/index.html" class="text-xs font-mono text-[#B85331] hover:underline font-semibold">Анализ лота ➔</a>
+                    </div>
+                </div>
+
+                <!-- Retail Option with CPA -->
+                <div class="p-5 bg-[#FFFFFF] border border-[#B85331]/30 rounded-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-mono uppercase text-[#B85331] bg-[#B85331]/10 px-2 py-0.5 font-semibold rounded-sm">Гарантия 24 мес • Retail</span>
+                            <span id="advisorNewPrice" class="font-mono text-lg font-bold text-[#B85331]">75 000 ₽</span>
+                        </div>
+                        <h3 id="advisorNewTitle" class="font-serif-editorial text-xl font-medium text-[#181816]">RTX 4070 Super Новый</h3>
+                        <p id="advisorNewDesc" class="text-xs text-[#5C5952] font-serif italic mt-2">Энергоэффективный чип AD104, DLSS 3 и нулевой риск дефектов.</p>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2">
+                        <a id="advisorCpaBtn" href="https://market.yandex.ru/search?text=RTX+4070+Super" target="_blank" rel="nofollow noopener" class="flex-1 text-center py-2.5 bg-[#181816] text-[#FAF8F5] text-xs font-mono hover:bg-[#B85331] transition rounded-sm">
+                            Купить новый на Маркете ↗
+                        </a>
+                        <a id="advisorWatchBtn" href="https://t.me/monitoringsuba_bot?start=watch_rtx4070super" target="_blank" class="px-3 py-2.5 border border-[#181816] text-[#181816] hover:bg-[#181816] hover:text-white transition text-xs font-mono rounded-sm" title="Следить за падением цены в Telegram">
+                            🔔
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🧮 3. ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР 1 FPS С ВЫБОРОМ ИГР -->
         <div class="mb-16 p-8 border border-[#E3DFD5] bg-[#FFFFFF] rounded-sm shadow-sm">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E3DFD5] pb-4 mb-6">
                 <div>
-                    <div class="text-[10px] font-mono uppercase tracking-widest text-[#B85331]">INTERACTIVE UTILITY • OPEN BENCHMARK</div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-[#B85331]">INTERACTIVE UTILITY • GAME BENCHMARK SUITE</div>
                     <h2 class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">Калькулятор реальной стоимости 1 FPS</h2>
                 </div>
                 <div class="text-xs font-mono text-[#8C887E] mt-2 sm:mt-0">DuckDB OLAP Engine</div>
             </div>
             <p class="text-sm font-serif italic text-[#5C5952] mb-6">
-                Расчет удельной стоимости одного кадра в секунду (₽ / FPS) на основе фактических медианных цен вторичного рынка.
+                Расчет удельной стоимости одного кадра в секунду (₽ / FPS) в реальных играх на основе фактических медианных цен вторичного рынка.
             </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div>
                     <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Видеокарта:</label>
                     <select id="gpuSelect" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" onchange="updateCalc()">
-                        <option value="rtx_3080" data-fps="82" data-median="90500">NVIDIA RTX 3080 (10 GB) — ~82 FPS</option>
-                        <option value="rtx_4080" data-fps="120" data-median="189990">NVIDIA RTX 4080 (16 GB) — ~120 FPS</option>
-                        <option value="rtx_4070" data-fps="92" data-median="65000">NVIDIA RTX 4070 (12 GB) — ~92 FPS</option>
-                        <option value="rx_7800_xt" data-fps="88" data-median="58000">AMD RX 7800 XT (16 GB) — ~88 FPS</option>
-                        <option value="rx_6800_xt" data-fps="80" data-median="42000">AMD RX 6800 XT (16 GB) — ~80 FPS</option>
-                        <option value="rtx_3060" data-fps="46" data-median="26000">NVIDIA RTX 3060 (12 GB) — ~46 FPS</option>
+                        <option value="RTX 4090" data-cyberpunk="115" data-cs2="380" data-warzone="165" data-alan="95" data-median="189990">NVIDIA RTX 4090 (24 GB)</option>
+                        <option value="RTX 4080" data-cyberpunk="88" data-cs2="320" data-warzone="140" data-alan="72" data-median="189990">NVIDIA RTX 4080 (16 GB)</option>
+                        <option value="RTX 4070 SUPER" data-cyberpunk="68" data-cs2="270" data-warzone="118" data-alan="56" data-median="65000">NVIDIA RTX 4070 Super (12 GB)</option>
+                        <option value="RTX 3080" data-cyberpunk="62" data-cs2="255" data-warzone="110" data-alan="49" data-median="90500" selected>NVIDIA RTX 3080 (10 GB)</option>
+                        <option value="RX 7800 XT" data-cyberpunk="66" data-cs2="290" data-warzone="130" data-alan="47" data-median="58000">AMD RX 7800 XT (16 GB)</option>
+                        <option value="RX 6800 XT" data-cyberpunk="58" data-cs2="260" data-warzone="115" data-alan="42" data-median="42000">AMD RX 6800 XT (16 GB)</option>
+                        <option value="RTX 3060" data-cyberpunk="32" data-cs2="155" data-warzone="65" data-alan="24" data-median="26000">NVIDIA RTX 3060 (12 GB)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Игра / Бенчмарк:</label>
+                    <select id="gameSelect" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" onchange="updateCalc()">
+                        <option value="cyberpunk">Cyberpunk 2077 (Ultra)</option>
+                        <option value="cs2">Counter-Strike 2 (High)</option>
+                        <option value="warzone">Call of Duty: Warzone</option>
+                        <option value="alan">Alan Wake 2 (High)</option>
                     </select>
                 </div>
                 <div>
@@ -709,22 +818,22 @@ class MagazineArticleSEOGenerator:
                     <input type="number" id="priceInput" value="90500" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" oninput="updateCalc()">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Разрешение экрана:</label>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Разрешение:</label>
                     <select id="resSelect" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" onchange="updateCalc()">
-                        <option value="1.0">1440p (QHD Ultra)</option>
-                        <option value="1.38">1080p (FHD Ultra)</option>
-                        <option value="0.58">4K (UHD Ultra)</option>
+                        <option value="1.0">1440p (QHD)</option>
+                        <option value="1.35">1080p (FHD)</option>
+                        <option value="0.58">4K (UHD)</option>
                     </select>
                 </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-[#FAF8F5] border border-[#E8E4DA] text-center">
                 <div>
                     <div class="text-[10px] font-mono uppercase text-[#8C887E]">Ожидаемый FPS</div>
-                    <div id="resFps" class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">82 FPS</div>
+                    <div id="resFps" class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">62 FPS</div>
                 </div>
                 <div>
                     <div class="text-[10px] font-mono uppercase text-[#8C887E]">Стоимость 1 FPS</div>
-                    <div id="resCostPerFps" class="font-serif-editorial text-2xl font-medium text-[#B85331] mt-1">1,103 ₽ / FPS</div>
+                    <div id="resCostPerFps" class="font-serif-editorial text-2xl font-medium text-[#B85331] mt-1">1,459 ₽ / FPS</div>
                 </div>
                 <div>
                     <div class="text-[10px] font-mono uppercase text-[#8C887E]">Медиана рынка</div>
@@ -753,7 +862,7 @@ class MagazineArticleSEOGenerator:
             <div class="text-xs font-mono text-[#8C887E] uppercase tracking-wider mb-6 pb-2.5 border-b border-[#181816]">
                 Реестр аналитических исследований рынка
             </div>
-            <div class="space-y-0 divide-y divide-[#E8E4DA]">
+            <div id="catalogList" class="space-y-0 divide-y divide-[#E8E4DA]">
                 {"".join(catalog_rows)}
             </div>
         </div>
@@ -764,10 +873,106 @@ class MagazineArticleSEOGenerator:
     </footer>
 
     <script>
+        let currentTask = 'gaming_1440p';
+
+        const advisorData = {{
+            35000: {{
+                gaming_1440p: {{ used: "RTX 3070 (8 GB) б/у", used_p: 30000, desc: "На вторичке RTX 3070 дает на 45% больше FPS, чем новые карты за эту же цену.", new_t: "RTX 3060 12GB Новый", new_p: 32000, new_desc: "12 ГБ памяти и гарантия ритейлера 24 месяца.", query: "RTX 3060 12GB" }},
+                esports_1080p: {{ used: "RX 6700 XT 12GB б/у", used_p: 26000, desc: "210+ FPS в CS2 и Apex Legends при минимальном бюджете.", new_t: "RTX 4060 Новый", new_p: 36000, new_desc: "DLSS 3 и генерация кадров в новом поколении.", query: "RTX 4060" }},
+                workstation: {{ used: "RTX 3060 12GB б/у", used_p: 22000, desc: "12 ГБ VRAM критически важны для локальных LLM и 3D-сцен.", new_t: "RTX 4060 8GB Новый", new_p: 36000, new_desc: "Энергоэффективный чип для быстрого видеомонтажа.", query: "RTX 4060" }},
+                portable: {{ used: "Steam Deck LCD 512GB б/у", used_p: 29000, desc: "Полный доступ к библиотеке Steam в дороге.", new_t: "Nintendo Switch OLED", new_p: 31000, new_desc: "Сочный экран и официальная гарантия.", query: "Nintendo Switch OLED" }}
+            }},
+            65000: {{
+                gaming_1440p: {{ used: "RTX 3080 (10 GB) б/у", used_p: 45000, desc: "Дает производительность уровня новой карты за 75k ₽, экономя 30 000 ₽.", new_t: "RTX 4070 Super Новый", new_p: 75000, new_desc: "Энергоэффективный чип AD104, DLSS 3 и нулевой риск дефектов.", query: "RTX 4070 Super" }},
+                esports_1080p: {{ used: "Ryzen 7800X3D + RTX 3070", used_p: 58000, desc: "3D V-Cache дает максимальный фреймрейт без микрофризов.", new_t: "Core i5 13400 + RTX 4060", new_p: 64000, new_desc: "Сбалансированная новая сборка с чеком из магазина.", query: "RTX 4060" }},
+                workstation: {{ used: "RX 6800 XT (16 GB) б/у", used_p: 42000, desc: "16 ГБ VRAM и 256-битная шина для тяжелого 4K-рендеринга.", new_t: "RTX 4060 Ti 16GB Новый", new_p: 54000, new_desc: "Тензорные ядра Ada Lovelace и 16 ГБ памяти.", query: "RTX 4060 Ti 16GB" }},
+                portable: {{ used: "Steam Deck OLED 512GB б/у", used_p: 52000, desc: "OLED экран 90 Гц и увеличенная батарея — эталон портатива.", new_t: "ASUS ROG Ally Z1 Extreme", new_p: 62000, new_desc: "Windows 11 и мощный 8-ядерный процессор Zen 4.", query: "ASUS ROG Ally" }}
+            }},
+            150000: {{
+                gaming_1440p: {{ used: "RTX 4080 (16 GB) б/у", used_p: 85000, desc: "Идеальный флагман для максимального качества с трассировкой лучей.", new_t: "RTX 4070 Ti Super Новый", new_p: 95000, new_desc: "16 ГБ памяти и официальная гарантия 3 года.", query: "RTX 4070 Ti Super" }},
+                esports_1080p: {{ used: "RTX 4080 + 360Hz Сетап", used_p: 105000, desc: "450+ FPS в киберспортивных дисциплинах.", new_t: "RTX 4080 Super Новый", new_p: 125000, new_desc: "Топовая производительность без компромиссов.", query: "RTX 4080 Super" }},
+                workstation: {{ used: "RTX 4080 16GB + Ryzen 7950X", used_p: 115000, desc: "16 ГБ памяти ускоряют инференс AI моделей в 2.5 раза.", new_t: "RTX 4080 Super Сборка", new_p: 135000, new_desc: "Рабочая станция с максимальной надежностью.", query: "RTX 4080 Super" }},
+                portable: {{ used: "MacBook Pro 14 M2 Pro (16/512)", used_p: 110000, desc: "Активное охлаждение, 120 Гц Mini-LED и 16 часов автономности.", new_t: "MacBook Air M3 (16/512)", new_p: 125000, new_desc: "Новейший 3-нм процессор в тонком корпусе с гарантией.", query: "MacBook Air M3" }}
+            }}
+        }};
+
+        function setTask(task) {{
+            currentTask = task;
+            document.querySelectorAll('.task-btn').forEach(b => {{
+                b.className = 'task-btn p-2.5 text-xs font-mono text-left border border-[#E3DFD5] bg-[#FAF8F5] text-[#181816] hover:border-[#181816] rounded-sm transition-colors';
+            }});
+            const activeBtn = document.getElementById('btn_' + task);
+            if (activeBtn) {{
+                activeBtn.className = 'task-btn p-2.5 text-xs font-mono text-left border border-[#181816] bg-[#181816] text-[#FAF8F5] rounded-sm transition-colors';
+            }}
+            updateAdvisor();
+        }}
+
+        function updateAdvisor() {{
+            const budget = parseInt(document.getElementById('budgetRange').value);
+            document.getElementById('budgetValue').innerText = budget.toLocaleString('ru-RU') + ' ₽';
+
+            let tierKey = 35000;
+            if (budget > 85000) {{ tierKey = 150000; }}
+            else if (budget > 45000) {{ tierKey = 65000; }}
+
+            const data = advisorData[tierKey][currentTask];
+            if (data) {{
+                document.getElementById('advisorUsedTitle').innerText = data.used;
+                document.getElementById('advisorUsedPrice').innerText = data.used_p.toLocaleString('ru-RU') + ' ₽';
+                document.getElementById('advisorUsedDesc').innerText = data.desc;
+
+                document.getElementById('advisorNewTitle').innerText = data.new_t;
+                document.getElementById('advisorNewPrice').innerText = data.new_p.toLocaleString('ru-RU') + ' ₽';
+                document.getElementById('advisorNewDesc').innerText = data.new_desc;
+
+                document.getElementById('advisorCpaBtn').href = 'https://market.yandex.ru/search?text=' + encodeURIComponent(data.query);
+                document.getElementById('advisorWatchBtn').href = 'https://t.me/monitoringsuba_bot?start=watch_' + encodeURIComponent(data.query.toLowerCase().replace(/\\s+/g, '_'));
+            }}
+        }}
+
+        function handleSmartInput() {{
+            const val = document.getElementById('smartInput').value.trim();
+            const pastePrompt = document.getElementById('pastePrompt');
+            if (val.startsWith('http') && val.includes('avito.ru')) {{
+                pastePrompt.classList.remove('hidden');
+                document.getElementById('botDeepLink').href = 'https://t.me/monitoringsuba_bot?start=audit_' + btoa(val).replace(/=/g, '');
+            }} else {{
+                pastePrompt.classList.add('hidden');
+                filterCatalog(val);
+            }}
+        }}
+
+        function handleSmartSubmit() {{
+            const val = document.getElementById('smartInput').value.trim();
+            if (val.startsWith('http')) {{
+                window.open('https://t.me/monitoringsuba_bot', '_blank');
+            }} else if (val) {{
+                const opt = Array.from(document.getElementById('gpuSelect').options).find(o => o.text.toLowerCase().includes(val.toLowerCase()));
+                if (opt) {{
+                    document.getElementById('gpuSelect').value = opt.value;
+                    updateCalc();
+                    document.getElementById('gpuSelect').scrollIntoView({{ behavior: 'smooth' }});
+                }}
+            }}
+        }}
+
+        function filterCatalog(query) {{
+            const rows = document.querySelectorAll('#catalogList > div');
+            rows.forEach(r => {{
+                if (!query || r.innerText.toLowerCase().includes(query.toLowerCase())) {{
+                    r.style.display = 'flex';
+                }} else {{
+                    r.style.display = 'none';
+                }}
+            }});
+        }}
+
         function updateCalc() {{
             const select = document.getElementById('gpuSelect');
             const opt = select.options[select.selectedIndex];
-            const baseFps = parseFloat(opt.getAttribute('data-fps'));
+            const game = document.getElementById('gameSelect').value;
+            const baseFps = parseFloat(opt.getAttribute('data-' + game)) || 60;
             const medianPrice = parseFloat(opt.getAttribute('data-median'));
             const price = parseFloat(document.getElementById('priceInput').value) || medianPrice;
             const resMultiplier = parseFloat(document.getElementById('resSelect').value);
@@ -792,7 +997,7 @@ class MagazineArticleSEOGenerator:
                 ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#8C887E] mt-1';
             }}
 
-            const optTitle = opt.text.split('—')[0].trim();
+            const optTitle = opt.text.split('(')[0].trim();
             const cpaBtn = document.getElementById('cpaLink');
             if (cpaBtn) {{
                 cpaBtn.href = 'https://market.yandex.ru/search?text=' + encodeURIComponent(optTitle);

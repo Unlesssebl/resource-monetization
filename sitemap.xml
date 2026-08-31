@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://price-radar.pages.dev/</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>  <url>
+    <loc>https://price-radar.pages.dev/prices/moskva/iphone_15_pro_moskva/</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://price-radar.pages.dev/prices/moskva/rtx_3080_moskva/</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://price-radar.pages.dev/prices/moskva/rtx_4080_moskva/</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>  <url>
+    <loc>https://price-radar.pages.dev/prices/moskva/playstation_5_moskva/</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

@@ -582,7 +582,8 @@ class ProfessionalSEOGenerator:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{clean_name} — Индекс цен и аналитика б/у рынка в {city_title} | PriceRadar</title>
     <meta name="description" content="Справедливая рыночная стоимость б/у {clean_name} на {day_str} {month_ru} {year_str}. Медиана: {median_price:,.0f} ₽, диапазон выкупа: {p10_buyout:,.0f}–{p25_low:,.0f} ₽. Инженерный чек-лист проверки.">
-    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <script type="application/ld+json">
     {json.dumps(schema_json, ensure_ascii=False, indent=2)}
     </script>
@@ -590,7 +591,7 @@ class ProfessionalSEOGenerator:
 <body>
     <div class="container">
         <header>
-            <a href="../../index.html" class="brand">
+            <a href="/" class="brand">
                 <span>⚡ PRICERADAR</span>
                 <span class="brand-badge">Terminal v2.4</span>
             </a>
@@ -698,8 +699,12 @@ class ProfessionalSEOGenerator:
         """Сборка всего статического сайта"""
         cls.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-        # 1. Сохранение styles.css
+        # 1. Сохранение styles.css и favicon
         (cls.OUTPUT_DIR / "styles.css").write_text(cls.get_terminal_css(), encoding="utf-8")
+        
+        favicon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#090d16"/><path d="M18 4L8 18h7l-2 10 11-14h-7l3-10z" fill="#38bdf8"/></svg>"""
+        (cls.OUTPUT_DIR / "favicon.svg").write_text(favicon_svg, encoding="utf-8")
+        (cls.OUTPUT_DIR / "favicon.ico").write_text(favicon_svg, encoding="utf-8")
 
         # 2. Получение таргетов
         conn = DataLake.get_connection()

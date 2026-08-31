@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:;">
+    <title>PriceRadar Journal — Аналитическое издание вторичного рынка</title>
+    <meta name="description" content="Журнал и открытый Data Lake ценообразования, технического скоринга и аналитики электроники.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzE4MTgxNiIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1zaXplPSIxOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmaWxsPSIjRkFGOEY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzE4MTgxNiIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1zaXplPSIxOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmaWxsPSIjRkFGOEY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QPC90ZXh0Pjwvc3ZnPg==">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }
+        .font-serif-editorial { font-family: 'Newsreader', Georgia, serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
+    <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
+        <div class="max-w-6xl mx-auto px-8 h-20 flex items-center justify-between">
+            <a href="./index.html" class="font-serif-editorial text-2xl tracking-tight font-medium text-[#181816]">
+                PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
+            </a>
+            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-xs font-mono text-[#B85331] hover:underline font-medium">
+                Telegram Бот ➔
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-8 py-16">
+        <div class="pb-10 border-b border-[#E3DFD5] mb-12">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-3">INDEX • 2026 EDITION</div>
+            <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.25rem] font-normal text-[#181816] tracking-tight mb-4">
+                Индекс цен вторичного рынка & Инженерные утилиты
+            </h1>
+            <p class="text-base font-serif-editorial italic text-[#5C5952] max-w-2xl leading-relaxed">
+                Открытая платформа аппаратного анализа, расчета стоимости 1 FPS и технической верификации потребительской электроники на базе DuckDB Data Lake.
+            </p>
+        </div>
+
+        <!-- 🧮 ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР 1 FPS -->
+        <div class="mb-16 p-8 border border-[#E3DFD5] bg-[#FFFFFF] rounded-sm shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E3DFD5] pb-4 mb-6">
+                <div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-[#B85331]">INTERACTIVE UTILITY • OPEN BENCHMARK</div>
+                    <h2 class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">Калькулятор реальной стоимости 1 FPS</h2>
+                </div>
+                <div class="text-xs font-mono text-[#8C887E] mt-2 sm:mt-0">DuckDB OLAP Engine</div>
+            </div>
+            <p class="text-sm font-serif italic text-[#5C5952] mb-6">
+                Расчет удельной стоимости одного кадра в секунду (₽ / FPS) на основе фактических медианных цен вторичного рынка.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Видеокарта:</label>
+                    <select id="gpuSelect" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" onchange="updateCalc()">
+                        <option value="rtx_3080" data-fps="82" data-median="90500">NVIDIA RTX 3080 (10 GB) — ~82 FPS</option>
+                        <option value="rtx_4080" data-fps="120" data-median="189990">NVIDIA RTX 4080 (16 GB) — ~120 FPS</option>
+                        <option value="rtx_4070" data-fps="92" data-median="65000">NVIDIA RTX 4070 (12 GB) — ~92 FPS</option>
+                        <option value="rx_7800_xt" data-fps="88" data-median="58000">AMD RX 7800 XT (16 GB) — ~88 FPS</option>
+                        <option value="rx_6800_xt" data-fps="80" data-median="42000">AMD RX 6800 XT (16 GB) — ~80 FPS</option>
+                        <option value="rtx_3060" data-fps="46" data-median="26000">NVIDIA RTX 3060 (12 GB) — ~46 FPS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Цена покупки (₽):</label>
+                    <input type="number" id="priceInput" value="90500" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" oninput="updateCalc()">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono uppercase text-[#8C887E] mb-2">Разрешение экрана:</label>
+                    <select id="resSelect" class="w-full bg-[#FAF8F5] border border-[#E3DFD5] p-3 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331]" onchange="updateCalc()">
+                        <option value="1.0">1440p (QHD Ultra)</option>
+                        <option value="1.38">1080p (FHD Ultra)</option>
+                        <option value="0.58">4K (UHD Ultra)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-[#FAF8F5] border border-[#E8E4DA] text-center">
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E]">Ожидаемый FPS</div>
+                    <div id="resFps" class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">82 FPS</div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E]">Стоимость 1 FPS</div>
+                    <div id="resCostPerFps" class="font-serif-editorial text-2xl font-medium text-[#B85331] mt-1">1,103 ₽ / FPS</div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E]">Медиана рынка</div>
+                    <div id="resMedian" class="font-serif-editorial text-2xl font-medium text-[#181816] mt-1">90,500 ₽</div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#8C887E]">Индекс ликвидности</div>
+                    <div id="resRating" class="font-serif-editorial text-2xl font-medium text-[#2E6F40] mt-1">Справедливая (A)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-16">
+            <div class="text-xs font-mono text-[#8C887E] uppercase tracking-wider mb-6 pb-2.5 border-b border-[#181816]">
+                Реестр аналитических исследований рынка
+            </div>
+            <div class="space-y-0 divide-y divide-[#E8E4DA]">
+                
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            IPHONE 15 PRO (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
+                    </div>
+                    <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Читать статью ➔
+                    </a>
+                </div>
+                
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            RTX 3080 (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
+                    </div>
+                    <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Читать статью ➔
+                    </a>
+                </div>
+                
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            RTX 4080 (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
+                    </div>
+                    <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Читать статью ➔
+                    </a>
+                </div>
+                
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="prices/moskva/playstation_5_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            PLAYSTATION 5 (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
+                    </div>
+                    <a href="prices/moskva/playstation_5_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Читать статью ➔
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-[#E3DFD5] py-12 text-center text-xs font-serif italic text-[#8C887E]">
+        <p>PriceRadar Journal • Sovereign Engineering Initiative • 2026</p>
+    </footer>
+
+    <script>
+        function updateCalc() {
+            const select = document.getElementById('gpuSelect');
+            const opt = select.options[select.selectedIndex];
+            const baseFps = parseFloat(opt.getAttribute('data-fps'));
+            const medianPrice = parseFloat(opt.getAttribute('data-median'));
+            const price = parseFloat(document.getElementById('priceInput').value) || medianPrice;
+            const resMultiplier = parseFloat(document.getElementById('resSelect').value);
+
+            const finalFps = Math.round(baseFps * resMultiplier);
+            const costPerFps = finalFps > 0 ? Math.round(price / finalFps) : 0;
+
+            document.getElementById('resFps').innerText = finalFps + ' FPS';
+            document.getElementById('resCostPerFps').innerText = costPerFps.toLocaleString('ru-RU') + ' ₽ / FPS';
+            document.getElementById('resMedian').innerText = medianPrice.toLocaleString('ru-RU') + ' ₽';
+
+            const diff = ((price - medianPrice) / medianPrice) * 100;
+            const ratingEl = document.getElementById('resRating');
+            if (diff < -15) {
+                ratingEl.innerText = '🔥 Топ-дисконт (S)';
+                ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#B85331] mt-1';
+            } else if (diff <= 10) {
+                ratingEl.innerText = '🟢 В рынке (A)';
+                ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#2E6F40] mt-1';
+            } else {
+                ratingEl.innerText = '⚠️ Завышена (C)';
+                ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#8C887E] mt-1';
+            }
+        }
+    </script>
+</body>
+</html>

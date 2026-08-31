@@ -326,6 +326,109 @@ def cmd_digest(args):
         res = asyncio.run(TelegramGateway.send_message(text=post))
         print("✓ Пост успешно доставлен в Telegram!" if res else "⚠️ Не удалось доставить пост в Telegram.")
 
+def cmd_comfyui(args):
+    """Сборка, валидация и управление портативным ComfyUI Super-Pack"""
+    from rmon.services.comfyui.builder import ComfyUIBuilder
+    from rmon.services.comfyui.workflows import export_all_workflows
+    builder = ComfyUIBuilder()
+
+    if args.action == "status" or not args.action:
+        ready = builder.verify_system_readiness()
+        print("\n" + "═"*70)
+        print(" 🧠 COMFYUI PORTABLE & CUDA READINESS CHECK")
+        print("═"*70)
+        print(f" • GPU:             {ready['gpu']}")
+        print(f" • VRAM:            {ready['vram_mb']} MB")
+        print(f" • CUDA Support:    {'🟢 Готово' if ready['cuda_ready'] else '🔴 Не обнаружено'}")
+        print(f" • Свободно на SSD: {ready['free_disk_gb']} GB")
+        print(f" • Статус:          {'✅ ПОЛНОСТЬЮ ГОТОВ К СБОРКЕ' if ready['is_ready'] else '⚠️ ТРЕБУЕТСЯ НАСТРОЙКА'}")
+        print("═"*70 + "\n")
+
+    elif args.action == "workflows":
+        out = Path("data/comfyui_pack/workflows")
+        res = export_all_workflows(out)
+        print("\n" + "═"*70)
+        print(f" 📦 ЭКСПОРТИРОВАНО {len(res)} ГОТОВЫХ ВОРКФЛОУ В {out}:")
+        print("═"*70)
+        for name, path in res.items():
+            print(f" • {name}.json -> {path}")
+        print("═"*70 + "\n")
+
+    elif args.action == "build":
+        print("\n🚀 Инициализация портативной сборки ComfyUI SuperPack...")
+        manifest = builder.build_release_manifest()
+        print("\n" + "═"*70)
+        print(" ✅ СБОРКА УСПЕШНО СФОРМИРОВАНА!")
+        print("═"*70)
+        print(f" • Название:           {manifest['pack_name']}")
+        print(f" • Версия:             {manifest['version']}")
+        print(f" • Воркфлоу в паке:    {manifest['workflows_count']} шт.")
+        print(f" • Файлов в манифесте: {manifest['files_count']} шт.")
+        print(f" • Релиз-папка:        data/releases/comfyui/manifest.json")
+        print("═"*70 + "\n")
+
+def cmd_assets(args):
+    """Генерация игровых AI-ассетов (PBR текстуры, иконки, упаковка для itch.io)"""
+    from rmon.services.assets.texture_engine import PBRTextureEngine
+    from rmon.services.assets.icon_engine import IconEngine
+    from rmon.services.assets.itch_packager import ItchPackager
+
+    if args.action == "textures":
+        print(f"\n🎨 Генерация {args.count} наборов PBR текстур (стиль: {args.style})...")
+        tex_engine = PBRTextureEngine()
+        for i in range(1, args.count + 1):
+            name = f"{args.style}_{i:02d}"
+            res = tex_engine.generate_procedural_material(name=name, style=args.style, resolution=args.res)
+            print(f"  ✓ Сгенерирован материал: {name} (Albedo, Normal, Roughness, Height, AO)")
+        print(f"✅ Готово! Текстуры сохранены в data/assets/textures\n")
+
+    elif args.action == "icons":
+        print(f"\n🗡️ Генерация {args.count} RPG спрайтов предметов (тип: {args.item_type})...")
+        icon_engine = IconEngine()
+        paths = []
+        palette = [(220, 50, 50), (50, 120, 220), (50, 200, 80), (220, 180, 40), (180, 50, 220)]
+        for i in range(1, args.count + 1):
+            name = f"{args.item_type}_{i:02d}"
+            color = palette[(i - 1) % len(palette)]
+            p = icon_engine.create_procedural_icon(item_name=name, item_type=args.item_type, color_rgb=color, size=args.res)
+            paths.append(p)
+            print(f"  ✓ Сгенерирована иконка: {name}.png")
+
+        sheet_path = icon_engine.build_sprite_sheet(paths, sheet_name=f"{args.item_type}_atlas_sheet")
+        print(f"✅ Атлас спрайтов скомпилирован: {sheet_path}\n")
+
+    elif args.action == "package":
+        packager = ItchPackager()
+        source = Path(args.source or "data/assets/textures")
+        slug = args.slug or "pbr_textures_pack_v1"
+        title = args.title or "100 PBR Seamless Master Textures"
+        print(f"\n📦 Упаковка дистрибутивного релиза для itch.io: '{title}'...")
+        zip_path = packager.package_bundle(source_dir=source, pack_slug=slug, title=title, price_usd=args.price)
+        print("\n" + "═"*70)
+        print(" ✅ АССЕТ-ПАК УСПЕШНО СОБРАН И ГОТОВ К ПРОДАЖЕ!")
+        print("═"*70)
+        print(f" • Файл релиза:   {zip_path}")
+        print(f" • Размер:        {zip_path.stat().st_size / 1024:.1f} KB")
+        print(f" • Лицензия:      Commercial Indie Game License (включена)")
+        print(f" • Цена продажи:  ${args.price} USD / 490 ₽")
+        print("═"*70 + "\n")
+
+def cmd_paywall(args):
+    """Управление подписками, тарифами и токенами доступа к 8 TB Cloud"""
+    from rmon.services.bot.paywall import PaywallManager
+    mgr = PaywallManager()
+
+    if args.action == "menu" or not args.action:
+        print("\n" + "═"*70)
+        print(mgr.get_payment_keyboard_text())
+        print("═"*70 + "\n")
+    elif args.action == "token":
+        tok = mgr.generate_download_token(user_id=args.user or 999999, tier_key=args.tier or "basic_comfy", ttl_hours=args.ttl or 48)
+        print(f"\n🔑 Сгенерирован VIP токен доступа:")
+        print(f" • Токен: {tok}")
+        print(f" • Ссылка для скачивания: https://t.me/your_bot?start=dl_{tok}")
+        print(f" • Время жизни: {args.ttl or 48} часов\n")
+
 def main():
     parser = argparse.ArgumentParser(description="Resource Monetization Platform CLI (RMon)")
     subparsers = parser.add_subparsers(dest="command", help="Команды платформы")
@@ -341,6 +444,41 @@ def main():
     show_p.add_argument("slug", help="Slug кейса")
     add_p = cas_sub.add_parser("add", help="AI-добавление и анализ новой идеи")
     add_p.add_argument("idea", help="Текстовое описание идеи / связки")
+
+    # comfyui
+    comfy_p = subparsers.add_parser("comfyui", help="Сборка и управление ComfyUI Portable Pack")
+    comfy_sub = comfy_p.add_subparsers(dest="action", help="Действие ComfyUI")
+    comfy_sub.add_parser("status", help="Проверка готовности GPU/CUDA и диска")
+    comfy_sub.add_parser("workflows", help="Экспорт готовых рабочих воркфлоу")
+    comfy_sub.add_parser("build", help="Сборка скелета и релиз-манифеста")
+
+    # assets
+    asset_p = subparsers.add_parser("assets", help="Генерация и упаковка AI Game Assets")
+    asset_sub = asset_p.add_subparsers(dest="action", help="Действие над ассетами")
+    tex_p = asset_sub.add_parser("textures", help="Генерация PBR материалов")
+    tex_p.add_argument("--style", default="cobblestone", choices=["cobblestone", "scifi_metal", "wood_planks", "alien_rock"], help="Стиль текстур")
+    tex_p.add_argument("--count", type=int, default=3, help="Количество материалов")
+    tex_p.add_argument("--res", type=int, default=1024, help="Разрешение (512, 1024, 2048)")
+    
+    icon_p = asset_sub.add_parser("icons", help="Генерация RPG иконок и спрайт-листов")
+    icon_p.add_argument("--item-type", default="potion", choices=["potion", "sword", "gem", "scroll"], help="Тип предметов")
+    icon_p.add_argument("--count", type=int, default=4, help="Количество иконок")
+    icon_p.add_argument("--res", type=int, default=512, help="Разрешение иконки")
+
+    pkg_p = asset_sub.add_parser("package", help="Упаковка релизного ZIP бандла для itch.io")
+    pkg_p.add_argument("--source", default="data/assets/textures", help="Исходная папка ассетов")
+    pkg_p.add_argument("--slug", default="pbr_materials_vol1", help="Slug пакета")
+    pkg_p.add_argument("--title", default="PBR Material Master Pack Vol. 1", help="Название для витрины")
+    pkg_p.add_argument("--price", type=float, default=4.99, help="Цена в $USD")
+
+    # paywall
+    pay_p = subparsers.add_parser("paywall", help="Управление подписками, тарифами и токенами 8 TB Cloud")
+    pay_sub = pay_p.add_subparsers(dest="action", help="Действие paywall")
+    pay_sub.add_parser("menu", help="Показать меню тарифов")
+    tok_p = pay_sub.add_parser("token", help="Сгенерировать VIP токен доступа")
+    tok_p.add_argument("--tier", default="basic_comfy", choices=["basic_comfy", "vip_all_access"], help="Уровень тарифа")
+    tok_p.add_argument("--user", type=int, default=123456, help="ID пользователя Telegram")
+    tok_p.add_argument("--ttl", type=int, default=48, help="Срок действия ссылки (в часах)")
 
     # seo
     seo_p = subparsers.add_parser("seo", help="Генератор Programmatic SEO портала цен")
@@ -402,6 +540,12 @@ def main():
         cmd_status()
     elif args.command == "cases":
         cmd_cases(args)
+    elif args.command == "comfyui":
+        cmd_comfyui(args)
+    elif args.command == "assets":
+        cmd_assets(args)
+    elif args.command == "paywall":
+        cmd_paywall(args)
     elif args.command == "seo":
         cmd_seo(args)
     elif args.command == "repurpose":

@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "min_jitter_seconds": 180,
+    "max_jitter_seconds": 600,
+    "telegram_alerts_enabled": true
+  },
+  "targets": [
+    {
+      "id": "rtx_3080_moskva",
+      "query": "RTX 3080",
+      "city": "moskva",
+      "interval_minutes": 5,
+      "anomaly_threshold_pct": 20,
+      "enabled": true
+    },
+    {
+      "id": "rtx_4070_moskva",
+      "query": "RTX 4070",
+      "city": "moskva",
+      "interval_minutes": 7,
+      "anomaly_threshold_pct": 20,
+      "enabled": true
+    },
+    {
+      "id": "iphone_14_moskva",
+      "query": "iPhone 14",
+      "city": "moskva",
+      "interval_minutes": 10,
+      "anomaly_threshold_pct": 20,
+      "enabled": true
+    }
+  ]
+}

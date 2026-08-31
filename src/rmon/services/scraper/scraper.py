@@ -1,4 +1,4 @@
-﻿import time
+import time
 import urllib.parse
 from datetime import datetime, timezone
 import duckdb
@@ -150,12 +150,7 @@ class MarketScraper:
                         continue
                 await browser.close()
         except Exception as e:
-            logger.warning(f"Playwright: {e}. Применение демо-данных.")
+            logger.error(f"Ошибка сбора Wildberries: {e}")
 
-        if not items:
-            items = [
-                {"source": "wb", "id": "194827101", "title": f"Комплект {query} премиум", "brand": "AutoMaster", "price_current": 3490.0, "price_original": 5200.0, "discount_pct": 33, "rating": 4.8, "feedbacks_count": 1240, "in_stock": True, "url": "https://www.wildberries.ru/catalog/194827101/detail.aspx"},
-                {"source": "wb", "id": "182947112", "title": f"Набор {query} стандарт", "brand": "ComfortZone", "price_current": 4890.0, "price_original": 7500.0, "discount_pct": 35, "rating": 4.9, "feedbacks_count": 890, "in_stock": True, "url": "https://www.wildberries.ru/catalog/182947112/detail.aspx"}
-            ]
-
+        logger.info(f"Сбор WB завершен. Получено позиций: {len(items)}")
         return items

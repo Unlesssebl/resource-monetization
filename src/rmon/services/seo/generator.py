@@ -1,10 +1,11 @@
 """
-Clean Minimalist Hardware Price Portal with Claude (Warm Editorial) Palette.
-- Цветовая палитра Claude / Anthropic: #141413 (Charcoal), #1E1E1C (Surface), #CC785C (Terracotta), #F3F1EB (Ivory)
-- Легкий и чистый стек: Tailwind CSS 3.x + Lucide Icons
-- Интуитивная шкала ценового диапазона (Price Range Gauge) в теплой гамме
-- Плавный криволинейный спарклайн цен (Cubic Bezier SVG) в терракотовом цвете
-- Аккуратная таблица предложений без визуального мусора
+Luxury Magazine & Editorial Print Design Generator (Cereal / Kinfolk / Monocle Style).
+Фундаментальная журнальная верстка на теплой бумаге:
+- Палитра теплой журнальной бумаги: #FAF8F5 (Ivory Paper), #181816 (Ink Black), #B85331 (Warm Cognac/Terracotta)
+- Типографика: Newsreader (Editorial Serif) + Inter / Geist (Grotesque) + JetBrains Mono
+- Композиция: Просторный журнальный разворот с монументальной цифрой медианы, 0 зажатых рамок карточек
+- Тонкие волосяные линии-разделители (#E3DFD5) и книжный реестр лотов
+- Кураторский блок розничного сравнения в эстетике премиального издания
 """
 import os
 import re
@@ -19,59 +20,59 @@ from rmon.core.config import settings
 from rmon.core.lake import DataLake
 from rmon.core.logger import get_logger
 
-logger = get_logger("ClaudeSEOGenerator")
+logger = get_logger("MagazineSEOGenerator")
 
 HARDWARE_DATABASE = {
     "RTX_3080": {
         "name": "GeForce RTX 3080",
-        "category": "Видеокарта",
+        "category": "Графические ускорители",
         "msrp_rub": 65000,
         "vram": "10 GB GDDR6X",
-        "bus": "320 bit",
-        "tdp": "320 Вт",
-        "cuda_cores": "8704",
-        "interface": "PCIe 4.0 x16",
+        "bus": "320-bit",
+        "tdp": "320 W",
+        "cuda_cores": "8 704 ядра",
+        "interface": "PCI Express 4.0 x16",
         "checks": [
-            "Тест в FurMark не менее 10 минут (температура чипа должна быть до 74°C)",
-            "Проверка температуры памяти GDDR6X в HWiNFO64 (не выше 94°C)",
-            "Визуальный осмотр бэкплейта и винтов на предмет вскрытия и следов перегрева",
-            "Тест вентиляторов на отсутствие постороннего шума и вибраций на 100% оборотов"
+            "15-минутный тест в FurMark при разрешении 4K с контролем стабильности фреймрейта",
+            "Мониторинг температуры видеопамяти GDDR6X в HWiNFO64 (не должна превышать 94°C)",
+            "Визуальный осмотр крепежных винтов и пломб бэкплейта на следы механического вскрытия",
+            "Проверка акустического профиля вентиляторов на отсутствие люфта и резонанса при 100% оборотов"
         ]
     },
     "RTX_4070": {
         "name": "GeForce RTX 4070",
-        "category": "Видеокарта",
+        "category": "Графические ускорители",
         "msrp_rub": 72000,
         "vram": "12 GB GDDR6X",
-        "bus": "192 bit",
-        "tdp": "200 Вт",
-        "cuda_cores": "5888",
-        "interface": "PCIe 4.0 x16",
+        "bus": "192-bit",
+        "tdp": "200 W",
+        "cuda_cores": "5 888 ядер",
+        "interface": "PCI Express 4.0 x16",
         "checks": [
-            "Осмотр 16-контактного разъема 12VHPWR на плотность посадки и целостность контактов",
-            "Тест в 3DMark TimeSpy на удержание Boost-частоты (не ниже 2475 МГц)",
-            "Проверка наличия гарантийной пломбы производителя и электронного чека"
+            "Осмотр 16-контактного разъема питания 12VHPWR на предмет термической деформации",
+            "Тест в 3DMark TimeSpy на стабильность удержания заявленной Boost-частоты (2475+ МГц)",
+            "Верификация подлинности заводской гарантийной пломбы и фискального чека ритейлера"
         ]
     },
     "IPHONE_14": {
         "name": "iPhone 14 (128/256 GB)",
-        "category": "Смартфон",
+        "category": "Мобильные устройства",
         "msrp_rub": 89000,
-        "vram": "128 / 256 GB",
+        "vram": "128 / 256 GB NVMe",
         "bus": "Apple A15 Bionic",
-        "tdp": "3279 мАч",
-        "cuda_cores": "6 GB ОЗУ",
+        "tdp": "3 279 мА·ч",
+        "cuda_cores": "6 GB LPDDR4X",
         "interface": "Lightning / MagSafe",
         "checks": [
-            "Проверка в 3uTools оригинальности дисплея, камер и контроллера аккумулятора",
-            "Проверка работы Face ID, True Tone и датчиков приближения",
-            "Проверка отсутствия корпоративных профилей MDM и чистый выход из iCloud"
+            "Аппаратная диагностика через 3uTools на оригинальность матриц дисплея, камер и АКБ",
+            "Калибровка и бесперебойный отклик систем Face ID и True Tone в среде iOS",
+            "Проверка отсутствия корпоративных профилей MDM и чистый статус учетной записи iCloud"
         ]
     }
 }
 
-class ClaudeCleanSEOGenerator:
-    """Генератор портала цен в теплой палитре Claude"""
+class MagazineSEOGenerator:
+    """Генератор страниц в стиле премиального печатного журнала"""
 
     OUTPUT_DIR = settings.DATA_DIR / "seo_site"
     BASE_URL = "https://price-radar.pages.dev"
@@ -84,7 +85,7 @@ class ClaudeCleanSEOGenerator:
 
     @staticmethod
     def filter_legitimate_deals(deals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Отсекает мусорные объявления (коробки, винты, кабели)"""
+        """Отсечение нерелевантных лотов через IQR-метод"""
         prices = [d["price_current"] for d in deals if d["price_current"] > 0]
         if not prices:
             return []
@@ -94,8 +95,8 @@ class ClaudeCleanSEOGenerator:
         return clean if len(clean) >= 3 else deals
 
     @classmethod
-    def generate_smooth_svg_chart(cls, prices: List[float], width: int = 700, height: int = 200) -> str:
-        """Генерация гладкого спарклайна в теплой терракотовой гамме Claude"""
+    def generate_editorial_svg_chart(cls, prices: List[float], width: int = 760, height: int = 180) -> str:
+        """Изящная векторная кривая распределения цен в журнальной эстетике"""
         if not prices:
             return ""
 
@@ -105,8 +106,8 @@ class ClaudeCleanSEOGenerator:
         max_p = prices_sorted[-1]
         med_p = prices_sorted[n // 2]
 
-        pad_x = 40
-        pad_y = 25
+        pad_x = 35
+        pad_y = 20
         w = width - (pad_x * 2)
         h = height - (pad_y * 2)
         y_range = max(1.0, max_p - min_p)
@@ -136,30 +137,30 @@ class ClaudeCleanSEOGenerator:
         return f"""
         <svg viewBox="0 0 {width} {height}" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <linearGradient id="claudeWarmArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#CC785C" stop-opacity="0.18"/>
-                    <stop offset="100%" stop-color="#CC785C" stop-opacity="0.0"/>
+                <linearGradient id="magazineWarmArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#B85331" stop-opacity="0.10"/>
+                    <stop offset="100%" stop-color="#B85331" stop-opacity="0.0"/>
                 </linearGradient>
             </defs>
-            <!-- Сетка -->
-            <line x1="{pad_x}" y1="{pad_y}" x2="{width - pad_x}" y2="{pad_y}" stroke="#2C2C29" stroke-dasharray="3 3"/>
-            <line x1="{pad_x}" y1="{height/2}" x2="{width - pad_x}" y2="{height/2}" stroke="#2C2C29" stroke-dasharray="3 3"/>
-            <line x1="{pad_x}" y1="{height - pad_y}" x2="{width - pad_x}" y2="{height - pad_y}" stroke="#2C2C29"/>
+            <!-- Волосяные направляющие -->
+            <line x1="{pad_x}" y1="{pad_y}" x2="{width - pad_x}" y2="{pad_y}" stroke="#E3DFD5" stroke-dasharray="2 3"/>
+            <line x1="{pad_x}" y1="{height/2}" x2="{width - pad_x}" y2="{height/2}" stroke="#E3DFD5" stroke-dasharray="2 3"/>
+            <line x1="{pad_x}" y1="{height - pad_y}" x2="{width - pad_x}" y2="{height - pad_y}" stroke="#D1CCC0"/>
 
-            <!-- Заливка и линия -->
-            <path d="{area_str}" fill="url(#claudeWarmArea)"/>
-            <path d="{path_str}" fill="none" stroke="#CC785C" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Заливка и контур кривой -->
+            <path d="{area_str}" fill="url(#magazineWarmArea)"/>
+            <path d="{path_str}" fill="none" stroke="#B85331" stroke-width="1.8" stroke-linecap="round"/>
 
-            <!-- Подписи уровней -->
-            <text x="{pad_x}" y="{height - 8}" fill="#7D7A73" font-size="11" font-family="monospace">Мин: {int(min_p):,} ₽</text>
-            <text x="{width/2}" y="{height - 8}" fill="#CC785C" font-size="11" text-anchor="middle" font-family="monospace" font-weight="600">Медиана: {int(med_p):,} ₽</text>
-            <text x="{width - pad_x}" y="{height - 8}" fill="#7D7A73" font-size="11" text-anchor="end" font-family="monospace">Макс: {int(max_p):,} ₽</text>
+            <!-- Метки котировок -->
+            <text x="{pad_x}" y="{height - 6}" fill="#8C887E" font-size="11" font-family="'JetBrains Mono', monospace">Мин. {int(min_p):,} ₽</text>
+            <text x="{width/2}" y="{height - 6}" fill="#B85331" font-size="11" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="600">Медиана: {int(med_p):,} ₽</text>
+            <text x="{width - pad_x}" y="{height - 6}" fill="#8C887E" font-size="11" text-anchor="end" font-family="'JetBrains Mono', monospace">Макс. {int(max_p):,} ₽</text>
         </svg>
         """
 
     @classmethod
     def generate_product_page(cls, target_id: str, city: str = "moskva") -> Dict[str, Any]:
-        """Генерация страницы товара в палитре Claude"""
+        """Генерация страницы-разворота в стиле дорогого издания"""
         conn = DataLake.get_connection()
         try:
             rows = conn.execute("""
@@ -198,221 +199,195 @@ class ClaudeCleanSEOGenerator:
             conn.close()
 
         now = datetime.now()
-        date_str = f"{now.day} {cls.MONTH_NAMES_RU.get(now.month, 'августа')} {now.year}"
+        date_full = f"{now.day} {cls.MONTH_NAMES_RU.get(now.month, 'августа')} {now.year}"
         city_title = "Москве" if city == "moskva" else "Санкт-Петербурге"
-        chart_svg = cls.generate_smooth_svg_chart(prices)
+        chart_svg = cls.generate_editorial_svg_chart(prices)
 
-        # Таблица предложений
+        # Реестр лотов в книжном стиле
         deals_html = []
-        for d in best_deals:
+        for idx, d in enumerate(best_deals, 1):
             disc = max(0, int(((med_price - d['price_current']) / med_price) * 100))
-            disc_badge = f'<span class="ml-2 text-xs font-medium px-2 py-0.5 rounded bg-[#68B38A]/15 text-[#68B38A] border border-[#68B38A]/30">-{disc}%</span>' if disc >= 10 else ""
+            disc_badge = f'<span class="text-xs font-mono text-[#B85331] font-medium ml-2">-{disc}%</span>' if disc >= 10 else ""
             deals_html.append(f"""
-            <tr class="border-b border-[#2C2C29] hover:bg-[#262624] transition">
-                <td class="py-3 px-4">
-                    <a href="{d['url']}" target="_blank" rel="nofollow noopener" class="text-sm font-medium text-[#F3F1EB] hover:text-[#CC785C] transition flex items-center gap-1.5">
-                        {d['title'][:55]}
-                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#7D7A73]"></i>
+            <div class="flex items-baseline justify-between py-3.5 border-b border-[#E8E4DA] group hover:border-[#B85331] transition-colors">
+                <div class="pr-4">
+                    <a href="{d['url']}" target="_blank" rel="nofollow noopener" class="text-sm font-medium text-[#181816] group-hover:text-[#B85331] transition-colors inline-flex items-center gap-1">
+                        <span>{d['title'][:55]}</span>
+                        <span class="text-xs text-[#8C887E] group-hover:translate-x-0.5 transition-transform">↗</span>
                     </a>
-                    <div class="text-xs text-[#7D7A73] mt-0.5">📍 {d['location']} • Продавец: {d['seller'][:25]}</div>
-                </td>
-                <td class="py-3 px-4 text-right">
-                    <span class="font-mono text-sm font-semibold text-[#68B38A]">{d['price_current']:,.0f} ₽</span>
+                    <div class="text-xs text-[#8C887E] mt-0.5 font-serif italic">{d['location']} • Продавец: {d['seller'][:20]}</div>
+                </div>
+                <div class="text-right shrink-0">
+                    <span class="font-mono text-sm font-semibold text-[#181816]">{d['price_current']:,.0f} ₽</span>
                     {disc_badge}
-                </td>
-            </tr>
+                </div>
+            </div>
             """)
 
+        # Нумерованный чеклист проверки
         checks_html = "".join([
-            f'''<li class="flex items-start gap-2.5 text-sm text-[#B8B6AF]">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-[#CC785C] shrink-0 mt-0.5"></i>
-                <span>{c}</span>
-            </li>'''
-            for c in hw['checks']
+            f'''<div class="flex items-baseline gap-3 py-2.5 border-b border-[#E8E4DA] last:border-b-0">
+                <span class="font-mono text-xs text-[#B85331] font-semibold">0{idx}.</span>
+                <p class="text-xs leading-relaxed text-[#5C5952]">{c}</p>
+            </div>'''
+            for idx, c in enumerate(hw['checks'], 1)
         ])
 
         html = f"""<!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сколько стоит б/у {clean_name} в {city_title} — Цены и аналитика рынка ({now.year})</title>
-    <meta name="description" content="Реальные цены на б/у {clean_name} в {city_title} на {date_str}. Медиана рынка: {med_price:,.0f} ₽. Анализ {len(deals)} объявлений, диапазон цен и чек-лист проверки.">
+    <title>{clean_name} — Исследование ценообразования в {city_title} | PriceRadar</title>
+    <meta name="description" content="Справедливая рыночная стоимость б/у {clean_name} на {date_full}. Медиана: {med_price:,.0f} ₽. Аналитический срез выборки из {len(deals)} лотов и технический паспорт.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
-        body {{ font-family: 'Inter', sans-serif; }}
-        font-mono {{ font-family: 'JetBrains Mono', monospace; }}
+        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        body {{ font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }}
+        .font-serif-editorial {{ font-family: 'Newsreader', Georgia, serif; }}
+        .font-mono {{ font-family: 'JetBrains Mono', monospace; }}
     </style>
 </head>
-<body class="bg-[#141413] text-[#F3F1EB] min-h-screen antialiased">
-    <!-- Header -->
-    <header class="border-b border-[#2C2C29] bg-[#141413]/90 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 text-sm font-semibold text-[#F3F1EB] hover:opacity-90">
-                <i data-lucide="cpu" class="w-5 h-5 text-[#CC785C]"></i>
-                <span>PriceRadar</span>
-                <span class="text-xs px-2 py-0.5 rounded bg-[#1E1E1C] text-[#B8B6AF] border border-[#2C2C29] font-normal">Цены вторичного рынка</span>
+<body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
+    <!-- Header: Editorial Masthead -->
+    <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
+        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-baseline gap-2 text-sm text-[#181816] hover:opacity-80 transition">
+                <span class="font-serif-editorial text-lg tracking-tight font-medium">PriceRadar</span>
+                <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Vol. 26</span>
             </a>
-            <div class="flex items-center gap-3">
-                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium bg-[#CC785C] hover:opacity-90 text-[#FAF9F6] px-3.5 py-1.5 rounded-md transition shadow-sm">
-                    <i data-lucide="bell" class="w-3.5 h-3.5"></i>
-                    <span>Бот алертов</span>
+            <div class="flex items-center gap-4 text-xs font-mono">
+                <span class="text-[#8C887E]">г. Москва</span>
+                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-[#B85331] hover:underline underline-offset-4">
+                    Telegram Алерты ➔
                 </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Breadcrumb -->
-        <div class="flex items-center justify-between text-xs text-[#7D7A73] mb-3">
-            <div class="flex items-center gap-1.5">
-                <a href="/" class="hover:text-[#F3F1EB]">Главная</a>
-                <span>/</span>
-                <span class="text-[#B8B6AF]">{hw['category']}</span>
-                <span>/</span>
-                <span class="text-[#F3F1EB]">{clean_name}</span>
-            </div>
-            <div class="flex items-center gap-1.5 font-mono text-[#7D7A73]">
-                <span class="w-2 h-2 rounded-full bg-[#68B38A]"></span>
-                <span>Обновлено: {date_str}</span>
-            </div>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <!-- Meta Label -->
+        <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-4 border-b border-[#E3DFD5] mb-8">
+            <span>{hw['category'].upper()} • АНАЛИТИЧЕСКИЙ СРЕЗ</span>
+            <span>ВЫПУСК ОТ {date_full.upper()}</span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-[#F3F1EB] mb-2">{clean_name} в {city_title}</h1>
-        <p class="text-sm text-[#B8B6AF] mb-6">Анализ цен по выборке из {len(deals)} реальных объявлений на вторичном рынке.</p>
-
-        <!-- Price Range Gauge (Claude Palette) -->
-        <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl p-5 mb-6 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-medium text-[#B8B6AF] mb-2">
-                <span>Низкая цена (Срочно)</span>
-                <span class="text-[#CC785C] font-semibold">Медиана рынка</span>
-                <span>Выше среднего (Магазины)</span>
+        <!-- Hero Section: Magazine Spread -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-baseline pb-10 border-b border-[#E3DFD5] mb-10">
+            <div class="md:col-span-7">
+                <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal leading-[1.15] text-[#181816] tracking-tight mb-4">
+                    {clean_name}
+                </h1>
+                <p class="text-sm font-serif-editorial italic text-[#5C5952] leading-relaxed max-w-lg">
+                    Исследование справедливой рыночной стоимости и динамики ценообразования на вторичном рынке {city_title}. Расчет произведен на основе выборки из {len(deals)} подтвержденных лотов.
+                </p>
             </div>
-            <div class="h-3 w-full bg-[#141413] rounded-full relative overflow-hidden flex mb-3 border border-[#2C2C29]">
-                <div class="h-full bg-[#68B38A]/80 w-[30%]"></div>
-                <div class="h-full bg-[#CC785C]/80 w-[40%]"></div>
-                <div class="h-full bg-[#383834] w-[30%]"></div>
-            </div>
-            <div class="grid grid-cols-3 text-center">
-                <div>
-                    <div class="text-xs text-[#7D7A73]">Выгодная покупка</div>
-                    <div class="font-mono text-sm font-semibold text-[#68B38A] mt-0.5">{min_price:,.0f} – {p25_price:,.0f} ₽</div>
+            <div class="md:col-span-5 md:text-right border-t md:border-t-0 border-[#E3DFD5] pt-4 md:pt-0">
+                <div class="text-[11px] font-mono uppercase text-[#8C887E] tracking-wider mb-1">Медиана рынка (Fair Value)</div>
+                <div class="font-mono text-4xl sm:text-5xl font-semibold text-[#181816] tracking-tight">
+                    {med_price:,.0f} <span class="text-2xl font-light text-[#8C887E]">₽</span>
                 </div>
-                <div>
-                    <div class="text-xs text-[#CC785C]">Справедливая цена</div>
-                    <div class="font-mono text-base font-bold text-[#F3F1EB] mt-0.5">{med_price:,.0f} ₽</div>
-                </div>
-                <div>
-                    <div class="text-xs text-[#7D7A73]">Верхний порог</div>
-                    <div class="font-mono text-sm font-semibold text-[#B8B6AF] mt-0.5">{p75_price:,.0f} – {max_price:,.0f} ₽</div>
+                <div class="text-xs font-mono text-[#B85331] mt-1.5">
+                    {msrp_diff_pct}% относительно стартовой цены ({msrp:,.0f} ₽)
                 </div>
             </div>
         </div>
 
-        <!-- Key Stats Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-lg p-3.5">
-                <div class="text-xs text-[#7D7A73]">Медианная цена</div>
-                <div class="font-mono text-lg font-bold text-[#CC785C] mt-1">{med_price:,.0f} ₽</div>
-                <div class="text-xs text-[#7D7A73] mt-0.5">{msrp_diff_pct}% от цены релиза</div>
-            </div>
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-lg p-3.5">
-                <div class="text-xs text-[#7D7A73]">Минимальная в базе</div>
-                <div class="font-mono text-lg font-bold text-[#68B38A] mt-1">{min_price:,.0f} ₽</div>
-                <div class="text-xs text-[#68B38A]/80 mt-0.5">Дисконт ~{max(0, int((med_price-min_price)/med_price*100))}%</div>
-            </div>
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-lg p-3.5">
-                <div class="text-xs text-[#7D7A73]">Официальная MSRP</div>
-                <div class="font-mono text-lg font-bold text-[#F3F1EB] mt-1">{msrp:,.0f} ₽</div>
-                <div class="text-xs text-[#7D7A73] mt-0.5">Цена нового на старте</div>
-            </div>
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-lg p-3.5">
-                <div class="text-xs text-[#7D7A73]">Ликвидность</div>
-                <div class="font-mono text-lg font-bold text-[#F3F1EB] mt-1">92 / 100</div>
-                <div class="text-xs text-[#7D7A73] mt-0.5">Высокий спрос</div>
-            </div>
-        </div>
-
-        <!-- SVG Sparkline Trend in Claude Terracotta -->
-        <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl p-5 mb-6">
-            <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-semibold text-[#F3F1EB]">Распределение цен по базе объявлений</div>
-                <div class="text-xs text-[#7D7A73]">{len(deals)} проверенных лотов</div>
-            </div>
-            {chart_svg}
-        </div>
-
-        <!-- Specs & Checklist -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl p-5">
-                <div class="flex items-center gap-2 text-sm font-semibold text-[#F3F1EB] mb-3">
-                    <i data-lucide="sliders" class="w-4 h-4 text-[#CC785C]"></i>
-                    <span>Характеристики</span>
-                </div>
-                <dl class="space-y-2 text-xs divide-y divide-[#2C2C29]">
-                    <div class="flex justify-between pt-2"><dt class="text-[#7D7A73]">Память / Видеопамять:</dt><dd class="font-mono text-[#F3F1EB]">{hw['vram']}</dd></div>
-                    <div class="flex justify-between pt-2"><dt class="text-[#7D7A73]">Шина данных:</dt><dd class="font-mono text-[#F3F1EB]">{hw['bus']}</dd></div>
-                    <div class="flex justify-between pt-2"><dt class="text-[#7D7A73]">Энергопотребление (TDP):</dt><dd class="font-mono text-[#F3F1EB]">{hw['tdp']}</dd></div>
-                    <div class="flex justify-between pt-2"><dt class="text-[#7D7A73]">Архитектура / Ядра:</dt><dd class="font-mono text-[#F3F1EB]">{hw['cuda_cores']}</dd></div>
-                    <div class="flex justify-between pt-2"><dt class="text-[#7D7A73]">Интерфейс:</dt><dd class="font-mono text-[#F3F1EB]">{hw['interface']}</dd></div>
-                </dl>
-            </div>
-
-            <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl p-5">
-                <div class="flex items-center gap-2 text-sm font-semibold text-[#F3F1EB] mb-3">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-[#68B38A]"></i>
-                    <span>Что проверить перед покупкой</span>
-                </div>
-                <ul class="space-y-2.5">
-                    {checks_html}
-                </ul>
-            </div>
-        </div>
-
-        <!-- Affiliate CTA Box -->
-        <div class="bg-[#1E1E1C] border border-[#383834] rounded-xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <!-- Editorial Overview: 3 Numbers with Horizontal Rule -->
+        <div class="grid grid-cols-3 gap-6 py-6 border-b border-[#E3DFD5] mb-10 text-center md:text-left">
             <div>
-                <div class="text-sm font-semibold text-[#F3F1EB]">Ищете новый {clean_name} с гарантией?</div>
-                <div class="text-xs text-[#B8B6AF] mt-0.5">Сравните стоимость б/у с ценами в официальных магазинах с гарантией 3 года.</div>
+                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Зона срочного выкупа</div>
+                <div class="font-mono text-base font-semibold text-[#181816] mt-1">{min_price:,.0f} – {p25_price:,.0f} ₽</div>
+                <div class="text-[11px] text-[#5C5952] mt-0.5">Дисконт 15–35%</div>
             </div>
-            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_clean" target="_blank" rel="nofollow noopener" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#CC785C] hover:opacity-90 text-[#FAF9F6] px-4 py-2 rounded-lg transition shrink-0">
-                <span>Цены на Яндекс.Маркете</span>
-                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </a>
+            <div class="border-x border-[#E3DFD5] px-4">
+                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Справедливый коридор</div>
+                <div class="font-mono text-base font-semibold text-[#B85331] mt-1">{p25_price:,.0f} – {p75_price:,.0f} ₽</div>
+                <div class="text-[11px] text-[#5C5952] mt-0.5">Основной объем сделок</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-mono uppercase text-[#8C887E] tracking-wider">Верхний диапазон</div>
+                <div class="font-mono text-base font-semibold text-[#181816] mt-1">{p75_price:,.0f} – {max_price:,.0f} ₽</div>
+                <div class="text-[11px] text-[#5C5952] mt-0.5">Магазины с гарантией</div>
+            </div>
         </div>
 
-        <!-- Secondary Market Listings Table -->
-        <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl overflow-hidden mb-8">
-            <div class="p-4 border-b border-[#2C2C29] flex items-center justify-between">
-                <div class="text-sm font-semibold text-[#F3F1EB]">Актуальные предложения на вторичном рынке</div>
-                <div class="text-xs text-[#7D7A73]">Сортировка: по возрастанию цены</div>
+        <!-- Section: Price Distribution Sparkline -->
+        <div class="pb-10 border-b border-[#E3DFD5] mb-10">
+            <div class="flex items-baseline justify-between mb-4">
+                <h2 class="font-serif-editorial text-xl font-medium text-[#181816]">Кривая плотности котировок</h2>
+                <span class="text-xs font-mono text-[#8C887E]">{len(deals)} верифицированных лотов</span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-[#2C2C29] text-xs text-[#7D7A73] bg-[#141413]/60">
-                            <th class="py-2.5 px-4 font-medium">Объявление и локация</th>
-                            <th class="py-2.5 px-4 font-medium text-right">Стоимость</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {"".join(deals_html)}
-                    </tbody>
-                </table>
+            <div class="py-2">
+                {chart_svg}
             </div>
+            <p class="text-xs text-[#8C887E] font-serif italic mt-3">
+                * Статистический расчет выполнен по алгоритму интерквартильного размаха (IQR) с исключением выбросов и аксессуаров.
+            </p>
+        </div>
+
+        <!-- Two Columns: Technical Spec & Inspection Protocol -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 pb-10 border-b border-[#E3DFD5] mb-10">
+            <!-- Column 1: Technical Spec -->
+            <div>
+                <div class="flex items-baseline gap-2 mb-4 pb-2 border-b border-[#181816]">
+                    <span class="font-mono text-xs text-[#B85331] font-semibold">I.</span>
+                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Паспорт устройства</h2>
+                </div>
+                <div class="space-y-0 text-xs">
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Архитектура чипа</span><span class="font-mono font-medium text-[#181816]">{hw['cuda_cores']}</span></div>
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Объем и тип памяти</span><span class="font-mono font-medium text-[#181816]">{hw['vram']} ({hw['bus']})</span></div>
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Потребление энергии (TDP)</span><span class="font-mono font-medium text-[#181816]">{hw['tdp']}</span></div>
+                    <div class="flex justify-between py-2 border-b border-[#E8E4DA]"><span class="text-[#8C887E]">Интерфейс подключения</span><span class="font-mono font-medium text-[#181816]">{hw['interface']}</span></div>
+                    <div class="flex justify-between py-2"><span class="text-[#8C887E]">Цена релиза производителя</span><span class="font-mono font-medium text-[#181816]">{msrp:,.0f} ₽</span></div>
+                </div>
+            </div>
+
+            <!-- Column 2: Protocol -->
+            <div>
+                <div class="flex items-baseline gap-2 mb-4 pb-2 border-b border-[#181816]">
+                    <span class="font-mono text-xs text-[#B85331] font-semibold">II.</span>
+                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Регламент проверки перед сделкой</h2>
+                </div>
+                <div>
+                    {checks_html}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Secondary Market Book Register -->
+        <div class="pb-10 border-b border-[#E3DFD5] mb-10">
+            <div class="flex items-baseline justify-between mb-4 pb-2 border-b border-[#181816]">
+                <div class="flex items-baseline gap-2">
+                    <span class="font-mono text-xs text-[#B85331] font-semibold">III.</span>
+                    <h2 class="font-serif-editorial text-lg font-medium text-[#181816]">Реестр предложений вторичного рынка</h2>
+                </div>
+                <span class="text-xs font-mono text-[#8C887E]">Сортировка: по возрастанию цены</span>
+            </div>
+            <div>
+                {"".join(deals_html)}
+            </div>
+        </div>
+
+        <!-- Editorial Retail Bridge (CPA Box) -->
+        <div class="bg-[#F2EFE8] border border-[#E3DFD5] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h3 class="font-serif-editorial text-base font-medium text-[#181816]">Сравнение с розничным ритейлом</h3>
+                <p class="text-xs text-[#5C5952] mt-0.5 max-w-md font-serif italic">
+                    Если вы рассматриваете покупку нового экземпляра с 3-летней официальной гарантией и кассовым чеком.
+                </p>
+            </div>
+            <a href="https://market.yandex.ru/search?text={clean_name}&clid=priceradar_magazine" target="_blank" rel="nofollow noopener" class="text-xs font-mono bg-[#181816] hover:bg-[#333] text-[#FAF8F5] px-4 py-2.5 transition shrink-0">
+                Каталог Яндекс.Маркета ➔
+            </a>
         </div>
     </main>
 
-    <footer class="border-t border-[#2C2C29] py-6 text-center text-xs text-[#7D7A73]">
-        <p>© {now.year} PriceRadar. Мониторинг и аналитика вторичного рынка электроники.</p>
+    <!-- Editorial Footer -->
+    <footer class="border-t border-[#E3DFD5] py-8 text-center text-xs font-serif italic text-[#8C887E]">
+        <p>PriceRadar Journal • Аналитическое бюро вторичного рынка электроники • {now.year}</p>
     </footer>
-
-    <script>
-        lucide.createIcons();
-    </script>
 </body>
 </html>
 """
@@ -425,10 +400,10 @@ class ClaudeCleanSEOGenerator:
 
     @classmethod
     def build_full_portal(cls) -> Path:
-        """Сборка полного портала"""
+        """Сборка полного журнального портала"""
         cls.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-        favicon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#141413"/><path d="M18 4L8 18h7l-2 10 11-14h-7l3-10z" fill="#CC785C"/></svg>"""
+        favicon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#181816"/><text x="16" y="22" font-size="18" font-family="Georgia, serif" fill="#FAF8F5" text-anchor="middle">P</text></svg>"""
         (cls.OUTPUT_DIR / "favicon.svg").write_text(favicon_svg, encoding="utf-8")
         (cls.OUTPUT_DIR / "favicon.ico").write_text(favicon_svg, encoding="utf-8")
 
@@ -444,7 +419,7 @@ class ClaudeCleanSEOGenerator:
         generated_urls = []
         catalog_rows = []
 
-        print(f"🏗️ Сборка портала цен в палитре Claude (#141413 / #CC785C) по {len(targets)} категориям...")
+        print(f"📖 Сборка журнала PriceRadar (Cereal & Monocle Style) по {len(targets)} категориям...")
 
         for tid in targets:
             page = cls.generate_product_page(tid, city="moskva")
@@ -458,72 +433,72 @@ class ClaudeCleanSEOGenerator:
 
                 title_clean = tid.replace('_moskva', '').replace('_', ' ').upper()
                 catalog_rows.append(f"""
-                <a href="{page['slug']}/index.html" class="flex items-center justify-between p-3.5 rounded-lg border border-[#2C2C29] bg-[#1E1E1C] hover:bg-[#262624] hover:border-[#383834] transition">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded bg-[#141413] border border-[#2C2C29] flex items-center justify-center text-[#CC785C]">
-                            <i data-lucide="cpu" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <div class="text-sm font-semibold text-[#F3F1EB]">{title_clean} (Москва)</div>
-                            <div class="text-xs text-[#B8B6AF]">Диапазон цен, медиана и проверенные предложения</div>
-                        </div>
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="{page['slug']}/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            {title_clean} (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Рыночный срез, котировки Fair Value и технический паспорт</div>
                     </div>
-                    <i data-lucide="arrow-right" class="w-4 h-4 text-[#7D7A73]"></i>
-                </a>
+                    <a href="{page['slug']}/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Открыть выпуск ➔
+                    </a>
+                </div>
                 """)
 
-        # Главная страница (Index Hub)
+        # Главная страница журнала (Masthead Index)
         index_html = f"""<!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PriceRadar — Аналитика и реальные цены вторичного рынка электроники</title>
-    <meta name="description" content="Умный мониторинг и расчет медианных цен на б/у видеокарты, смартфоны и комплектующие.">
+    <title>PriceRadar Journal — Исследование цен вторичного рынка</title>
+    <meta name="description" content="Аналитический журнал и открытый Data Lake ценообразования на рынке электроники.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {{ font-family: 'Inter', sans-serif; }}
+        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        body {{ font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }}
+        .font-serif-editorial {{ font-family: 'Newsreader', Georgia, serif; }}
+        .font-mono {{ font-family: 'JetBrains Mono', monospace; }}
     </style>
 </head>
-<body class="bg-[#141413] text-[#F3F1EB] min-h-screen antialiased">
-    <header class="border-b border-[#2C2C29] bg-[#141413]/90 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 text-sm font-semibold text-[#F3F1EB] hover:opacity-90">
-                <i data-lucide="cpu" class="w-5 h-5 text-[#CC785C]"></i>
-                <span>PriceRadar</span>
+<body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
+    <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
+        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" class="font-serif-editorial text-xl tracking-tight font-medium text-[#181816]">
+                PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
             </a>
-            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium bg-[#CC785C] hover:opacity-90 text-[#FAF9F6] px-3.5 py-1.5 rounded-md transition shadow-sm">
-                <i data-lucide="bell" class="w-3.5 h-3.5"></i>
-                <span>Бот алертов</span>
+            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-xs font-mono text-[#B85331] hover:underline">
+                Telegram Бот ➔
             </a>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-10">
-        <h1 class="text-3xl font-bold tracking-tight text-[#F3F1EB] mb-2">Аналитика цен вторичного рынка</h1>
-        <p class="text-sm text-[#B8B6AF] mb-8">Ежедневный сбор объявлений, отсечение спама и расчет справедливой стоимости техники.</p>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <div class="pb-8 border-b border-[#E3DFD5] mb-8">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-2">INDEX • 2026 EDITION</div>
+            <h1 class="font-serif-editorial text-4xl sm:text-5xl font-normal text-[#181816] tracking-tight mb-3">
+                Индекс цен вторичного рынка
+            </h1>
+            <p class="text-sm font-serif-editorial italic text-[#5C5952] max-w-lg leading-relaxed">
+                Периодическое аналитическое исследование котировок, справедливой стоимости и технического состояния потребительской электроники в Москве.
+            </p>
+        </div>
 
-        <div class="bg-[#1E1E1C] border border-[#2C2C29] rounded-xl p-5 mb-8">
-            <div class="text-sm font-semibold text-[#F3F1EB] mb-4 flex items-center gap-2">
-                <i data-lucide="layers" class="w-4 h-4 text-[#CC785C]"></i>
-                <span>Популярные категории и комплектующие</span>
+        <div class="mb-12">
+            <div class="text-xs font-mono text-[#8C887E] uppercase tracking-wider mb-4 pb-2 border-b border-[#181816]">
+                Реестр исследуемых категорий
             </div>
-            <div class="space-y-2.5">
+            <div class="space-y-0">
                 {"".join(catalog_rows)}
             </div>
         </div>
     </main>
 
-    <footer class="border-t border-[#2C2C29] py-6 text-center text-xs text-[#7D7A73]">
-        <p>© {datetime.now().year} PriceRadar. Open Secondary Market Data Lake.</p>
+    <footer class="border-t border-[#E3DFD5] py-8 text-center text-xs font-serif italic text-[#8C887E]">
+        <p>PriceRadar Journal • Open Data Initiative • {datetime.now().year}</p>
     </footer>
-
-    <script>
-        lucide.createIcons();
-    </script>
 </body>
 </html>"""
         (cls.OUTPUT_DIR / "index.html").write_text(index_html, encoding="utf-8")
@@ -540,10 +515,11 @@ class ClaudeCleanSEOGenerator:
         robots_txt = f"User-agent: *\nAllow: /\nSitemap: {cls.BASE_URL}/sitemap.xml\n"
         (cls.OUTPUT_DIR / "robots.txt").write_text(robots_txt, encoding="utf-8")
 
-        print(f"✓ Портал в палитре Claude успешно пересобран в: {cls.OUTPUT_DIR}")
+        print(f"✓ Журнал успешно пересобран в: {cls.OUTPUT_DIR}")
         return cls.OUTPUT_DIR
 
-ProgrammaticSEOGenerator = ClaudeCleanSEOGenerator
-ProfessionalSEOGenerator = ClaudeCleanSEOGenerator
-EditorialSEOGenerator = ClaudeCleanSEOGenerator
-CleanSEOGenerator = ClaudeCleanSEOGenerator
+ProgrammaticSEOGenerator = MagazineSEOGenerator
+ProfessionalSEOGenerator = MagazineSEOGenerator
+EditorialSEOGenerator = MagazineSEOGenerator
+CleanSEOGenerator = MagazineSEOGenerator
+ClaudeCleanSEOGenerator = MagazineSEOGenerator

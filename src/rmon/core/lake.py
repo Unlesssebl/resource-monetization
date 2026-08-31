@@ -38,12 +38,25 @@ class DataLake:
                 seller VARCHAR,
                 url VARCHAR,
                 image_url VARCHAR,
-                scraped_at TIMESTAMP,
-                PRIMARY KEY (item_id, scraped_at)
+                scraped_at TIMESTAMP
             );
-            CREATE INDEX IF NOT EXISTS idx_target ON price_history(target_id);
-            CREATE INDEX IF NOT EXISTS idx_scraped_at ON price_history(scraped_at);
         """)
+        # Ensure new columns exist if migrating from legacy table
+        for col, col_type in [
+            ("target_id", "VARCHAR"),
+            ("location", "VARCHAR"),
+            ("seller", "VARCHAR"),
+            ("image_url", "VARCHAR"),
+        ]:
+            try:
+                conn.execute(f"ALTER TABLE price_history ADD COLUMN IF NOT EXISTS {col} {col_type};")
+            except Exception:
+                pass
+        try:
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_target ON price_history(target_id);")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_scraped_at ON price_history(scraped_at);")
+        except Exception:
+            pass
 
     @classmethod
     def save_items(cls, items: List[Dict[str, Any]], target_id: str, source: str = "avito") -> int:

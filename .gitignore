@@ -9,6 +9,8 @@ data/*
 !data/.gitkeep
 !data/knowledge/
 !data/knowledge/**
+!data/seo_site/
+!data/seo_site/**
 logs/*
 !logs/.gitkeep
 *.tmp

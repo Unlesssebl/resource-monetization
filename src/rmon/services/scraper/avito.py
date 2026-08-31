@@ -46,7 +46,6 @@ class AvitoScraper:
         :param headless: Флаг скрытого режима браузера
         """
         from playwright.async_api import async_playwright
-        from playwright_stealth import Stealth
 
         encoded_query = urllib.parse.quote(query)
         search_url = f"https://www.avito.ru/{city}?q={encoded_query}&s=104"

@@ -11,6 +11,7 @@ RMon (Resource Monetization) — Единый CLI интерфейс управ�
 - sync (Облачная синхронизация Data Lake 8 ТБ)
 """
 import sys
+import re
 import asyncio
 import argparse
 from pathlib import Path
@@ -230,6 +231,101 @@ def cmd_sync(args):
     parquet_path = DataLake.export_to_parquet()
     print(f"✅ Data Lake сохранен: {parquet_path}")
 
+def cmd_hybrid(args):
+    """
+    ⚡ ЕДИНЫЙ ГИБРИДНЫЙ ДВИЖОК МОНЕТИЗАЦИИ (SOVEREIGN FLYWHEEL):
+    1. Сбор рыночных цен в DuckDB Data Lake (Avito Scraper)
+    2. Анализ ликвидности и генерация B2B-лидов на срочный выкуп (Fast Cash)
+    3. Синтез вирусных сценариев для Shorts / Reels с умными ссылками
+    4. Экспорт Data Lake в Parquet и статус кластера
+    """
+    import asyncio
+    from rmon.services.scraper.avito import AvitoScraper
+    from rmon.services.ai.deal_intelligence import DealIntelligenceEngine
+
+    query = args.query or "RTX 3080"
+    city = args.city or "moskva"
+    limit = args.limit or 6
+    target_id = f"{query.lower().replace(' ', '_')}_{city}"
+
+    print("\n" + "═"*75)
+    print(f" 🚀 ЗАПУСК ГИБРИДНОГО МОНЕТИЗАЦИОННОГО МАХОВИКА (SOVEREIGN FLYWHEEL)")
+    print(f" 🎯 Таргет: '{query}' [{city}] | Кластер: Host 1 (Node 1) & Host 2")
+    print("═"*75)
+
+    # 1. Сбор данных
+    print(f"\n[1/4] 🔍 Сбор рыночных данных через Stealth Scraper...")
+    items = asyncio.run(AvitoScraper.scrape_search(query=query, city=city, limit=limit, headless=True))
+    if items:
+        DataLake.save_items(items, target_id=target_id, source="avito")
+        print(f"      ✓ Сохранено в Data Lake: {len(items)} объявлений")
+    else:
+        print("      ⚠️ Свежих объявлений не получено, используем накопленный Data Lake.")
+
+    # 2. Анализ рынка
+    summary = DataLake.get_market_summary(target_id)
+    median = summary.get("median_price", 0.0)
+    total_items = summary.get("total_items", 0)
+    print(f"\n[2/4] 📊 Аналитика DuckDB Data Lake [{target_id}]:")
+    print(f"      • Всего позиций в базе: {total_items} шт.")
+    print(f"      • Медианная цена:       {median:,.0f} ₽")
+    print(f"      • 25-й перцентиль (P25): {summary.get('p25_price', 0):,.0f} ₽")
+    print(f"      • Диапазон цен:         {summary.get('min_price', 0):,.0f} ₽ — {summary.get('max_price', 0):,.0f} ₽")
+
+    # 3. B2B Лидген и Fast Cash
+    print(f"\n[3/4] 🏎️ B2B Лидген и Срочный Выкуп (Готовые сделки):")
+    anomalies = DataLake.get_anomalies(target_id, discount_threshold_pct=10.0)
+    if anomalies:
+        for idx, a in enumerate(anomalies[:3], 1):
+            econ = DealIntelligenceEngine.calculate_deal_economics(a["price_current"], median)
+            pitch = DealIntelligenceEngine.generate_negotiation_pitch(a["title"], a["price_current"])
+            print(f"      ┌─ [Лид #{idx}] {a['title']}")
+            print(f"      ├─ 💰 Цена: {a['price_current']:,.0f} ₽ (Дисконт: -{a.get('discount_from_median_pct', 0):.1f}%)")
+            print(f"      ├─ 📈 Чистая маржа с перепродажи: +{econ['net_profit_rub']:,.0f} ₽ (ROI: {econ['roi_pct']}%)")
+            print(f"      ├─ 🎯 Скрипт торга (Fast Cash Pitch): «{pitch}»")
+            print(f"      └─ 🔗 Контакт: {a['url']}\n")
+    else:
+        print(f"      ℹ️ Прямых аномалий со скидкой >10% не обнаружено. Мониторинг в фоне...")
+
+    # 4. УБТ Вирусный Контент & Связка
+    print(f"[4/4] 🎬 УБТ Видео-Фабрика (Синтез вирусного ролика для Shorts/TG):")
+    print(f"      ┌─ 🏷️ Тема Shorts: «Сколько на самом деле стоит {query} в 2026 году?»")
+    print(f"      ├─ ⚡ Хук (0-3 сек): «Не вздумай покупать {query}, пока не проверишь эту цифру!»")
+    print(f"      ├─ 📊 Инсайт: Реальная медиана — {median:,.0f} ₽, а нижняя планка рынка — {summary.get('p25_price', 0):,.0f} ₽.")
+    print(f"      ├─ 🔗 CTA (Призыв): «Проверь цену любого товара бесплатно в Telegram-боте @AvitoRadarBot»")
+    print(f"      └─ 📈 Dub.co Smart Link: https://dub.sh/radar-{target_id[:10]}")
+
+    # Экспорт
+    parquet_path = DataLake.export_to_parquet()
+    print("\n" + "═"*75)
+    print(f" ✅ ГИБРИДНЫЙ ЦИКЛ УСПЕШНО ВЫПОЛНЕН!")
+    print(f" 💾 Data Lake экспортирован в Parquet: {parquet_path.name}")
+    print("═"*75 + "\n")
+
+def cmd_digest(args):
+    """Генерация и предпросмотр аналитического поста для медиа-канала"""
+    from rmon.services.content.media_publisher import MediaPublisher
+    from rmon.core.gateway import TelegramGateway
+    import asyncio
+
+    if args.guide:
+        post = MediaPublisher.generate_gpu_safety_guide_post()
+    else:
+        post = MediaPublisher.generate_weekly_hardware_index()
+
+    print("\n" + "═"*70)
+    print(" 📰 ГОТОВЫЙ АНАЛИТИЧЕСКИЙ ПОСТ ДЛЯ МЕДИА-КАНАЛА:")
+    print("═"*70 + "\n")
+    # Очистка HTML тегов для консольного вывода
+    clean_text = re.sub(r"<[^>]+>", "", post)
+    print(clean_text)
+    print("\n" + "═"*70)
+
+    if args.send:
+        print("📤 Отправка поста в Telegram-канал/админу...")
+        res = asyncio.run(TelegramGateway.send_message(text=post))
+        print("✓ Пост успешно доставлен в Telegram!" if res else "⚠️ Не удалось доставить пост в Telegram.")
+
 def main():
     parser = argparse.ArgumentParser(description="Resource Monetization Platform CLI (RMon)")
     subparsers = parser.add_subparsers(dest="command", help="Команды платформы")
@@ -289,6 +385,17 @@ def main():
     # sync
     subparsers.add_parser("sync", help="Экспорт Data Lake и облачный бэкап")
 
+    # hybrid
+    hyb_p = subparsers.add_parser("hybrid", help="Запуск единого сквозного гибридного цикла монетизации (Flywheel)")
+    hyb_p.add_argument("--query", default="RTX 3080", help="Поисковый запрос / таргет")
+    hyb_p.add_argument("--city", default="moskva", help="Город ('moskva', 'spb')")
+    hyb_p.add_argument("--limit", type=int, default=6, help="Лимит сбора позиций")
+
+    # digest
+    dig_p = subparsers.add_parser("digest", help="Генерация аналитических постов для медиа-канала")
+    dig_p.add_argument("--guide", action="store_true", help="Сгенерировать обучающий гайд безопасности")
+    dig_p.add_argument("--send", action="store_true", help="Отправить готовый пост в Telegram")
+
     args = parser.parse_args()
 
     if args.command == "status":
@@ -311,6 +418,10 @@ def main():
         cmd_bot(args)
     elif args.command == "sync":
         cmd_sync(args)
+    elif args.command == "hybrid":
+        cmd_hybrid(args)
+    elif args.command == "digest":
+        cmd_digest(args)
     else:
         cmd_status()
         parser.print_help()

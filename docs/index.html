@@ -50,14 +50,23 @@
                     Введите название модели (GPU, CPU, Apple, Консоли) или вставьте прямую ссылку на объявление с Авито:
                 </p>
                 <div class="relative flex items-center">
-                    <input type="text" id="smartInput" placeholder="Например: RTX 4070 Super, Ryzen 7800X3D или ссылка https://avito.ru/..." class="w-full bg-[#FAF8F5] border-2 border-[#181816] p-4 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331] pr-32 rounded-sm placeholder:text-[#8C887E]" oninput="handleSmartInput()">
-                    <button onclick="handleSmartSubmit()" class="absolute right-2 px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono tracking-wider hover:bg-[#181816] transition-colors rounded-sm shadow-sm">
+                    <input type="text" id="smartInput" placeholder="Например: RTX 4070 Super, Ryzen 7800X3D или ссылка https://avito.ru/..." class="w-full bg-[#FAF8F5] border-2 border-[#181816] p-4 text-sm font-mono text-[#181816] focus:outline-none focus:border-[#B85331] pr-32 rounded-sm placeholder:text-[#8C887E]" oninput="handleSmartInput()" onkeydown="if(event.key==='Enter') handleSmartSubmit()">
+                    <button type="button" onclick="handleSmartSubmit()" class="absolute right-2 px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono tracking-wider hover:bg-[#181816] transition-colors rounded-sm shadow-sm cursor-pointer">
                         Проверить ➔
                     </button>
                 </div>
-                <div id="pastePrompt" class="hidden mt-4 p-4 bg-[#FAF8F5] border border-[#B85331] text-left text-xs font-mono text-[#181816] flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-sm">
-                    <span>⚡ Обнаружена ссылка Авито! Нажмите для отправки на глубокий AI-аудит рисков и прогрева чипа:</span>
-                    <a id="botDeepLink" href="https://t.me/monitoringsuba_bot" target="_blank" class="px-4 py-2 bg-[#181816] text-white hover:bg-[#B85331] transition rounded-sm text-center shrink-0">Открыть в Telegram-боте ↗</a>
+                <!-- Live Search & Instant AI Audit Feedback Card -->
+                <div id="searchFeedback" class="hidden mt-4 p-5 bg-[#FAF8F5] border-2 border-[#181816] text-left rounded-sm transition-all shadow-md">
+                    <div class="flex items-center justify-between pb-3 border-b border-[#E8E4DA] mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-[#B85331] animate-pulse"></span>
+                            <span id="feedbackBadge" class="text-[10px] font-mono uppercase tracking-widest text-[#B85331] font-semibold">AI РЕЗУЛЬТАТ АНАЛИЗА</span>
+                        </div>
+                        <span id="feedbackStatus" class="text-xs font-mono text-[#8C887E]">Мгновенный скоринг</span>
+                    </div>
+                    <div id="feedbackTitle" class="font-serif-editorial text-xl font-medium text-[#181816] mb-1">...</div>
+                    <p id="feedbackDesc" class="text-xs font-serif italic text-[#5C5952] mb-4 leading-relaxed">...</p>
+                    <div id="feedbackActions" class="flex flex-wrap items-center gap-3 pt-2"></div>
                 </div>
             </div>
         </div>
@@ -237,12 +246,12 @@
                 
                 <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
                     <div>
-                        <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
-                            RTX 4080 (Москва)
+                        <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            IPHONE 15 PRO (Москва)
                         </a>
                         <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
                     </div>
-                    <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                    <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
                         Читать статью ➔
                     </a>
                 </div>
@@ -261,12 +270,12 @@
                 
                 <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
                     <div>
-                        <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
-                            IPHONE 15 PRO (Москва)
+                        <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            RTX 4080 (Москва)
                         </a>
                         <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
                     </div>
-                    <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                    <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
                         Читать статью ➔
                     </a>
                 </div>
@@ -340,28 +349,85 @@
 
         function handleSmartInput() {
             const val = document.getElementById('smartInput').value.trim();
-            const pastePrompt = document.getElementById('pastePrompt');
+            filterCatalog(val);
             if (val.startsWith('http') && val.includes('avito.ru')) {
-                pastePrompt.classList.remove('hidden');
-                document.getElementById('botDeepLink').href = 'https://t.me/monitoringsuba_bot?start=audit_' + btoa(val).replace(/=/g, '');
-            } else {
-                pastePrompt.classList.add('hidden');
-                filterCatalog(val);
+                showFeedbackForAvito(val);
             }
         }
 
         function handleSmartSubmit() {
             const val = document.getElementById('smartInput').value.trim();
-            if (val.startsWith('http')) {
-                window.open('https://t.me/monitoringsuba_bot', '_blank');
-            } else if (val) {
-                const opt = Array.from(document.getElementById('gpuSelect').options).find(o => o.text.toLowerCase().includes(val.toLowerCase()));
-                if (opt) {
-                    document.getElementById('gpuSelect').value = opt.value;
-                    updateCalc();
-                    document.getElementById('gpuSelect').scrollIntoView({ behavior: 'smooth' });
-                }
+            const box = document.getElementById('searchFeedback');
+
+            if (!val) {
+                document.getElementById('gpuSelect').scrollIntoView({ behavior: 'smooth' });
+                return;
             }
+
+            if (val.startsWith('http') && val.includes('avito.ru')) {
+                showFeedbackForAvito(val);
+                return;
+            }
+
+            // 1. Проверяем точное или частичное совпадение в калькуляторе
+            const opt = Array.from(document.getElementById('gpuSelect').options).find(o => 
+                o.text.toLowerCase().includes(val.toLowerCase()) || 
+                o.value.toLowerCase().includes(val.toLowerCase().replace(/\s+/g, '_'))
+            );
+
+            // 2. Проверяем совпадение в каталоге готовых досье
+            const articles = [
+                { name: 'RTX 3080', url: 'prices/moskva/rtx_3080_moskva/index.html', price: '45 000 ₽', category: 'Видеокарта' },
+                { name: 'RTX 4080', url: 'prices/moskva/rtx_4080_moskva/index.html', price: '85 000 ₽', category: 'Видеокарта' },
+                { name: 'PlayStation 5', url: 'prices/moskva/playstation_5_moskva/index.html', price: '38 000 ₽', category: 'Консоль' },
+                { name: 'iPhone 15 Pro', url: 'prices/moskva/iphone_15_pro_moskva/index.html', price: '72 000 ₽', category: 'Смартфон' }
+            ];
+
+            const matchedArticle = articles.find(a => 
+                val.toLowerCase().includes(a.name.toLowerCase()) || 
+                a.name.toLowerCase().includes(val.toLowerCase())
+            );
+
+            box.classList.remove('hidden');
+
+            if (opt) {
+                document.getElementById('gpuSelect').value = opt.value;
+                updateCalc();
+                document.getElementById('feedbackBadge').innerText = 'НАЙДЕНО В ДАТАЛЕЙКЕ';
+                document.getElementById('feedbackTitle').innerText = opt.text;
+                document.getElementById('feedbackDesc').innerText = 'Модель активирована в калькуляторе. Ниже рассчитана удельная стоимость 1 FPS по реальным бенчмаркам.';
+                document.getElementById('feedbackActions').innerHTML = `
+                    <button onclick="document.getElementById('gpuSelect').scrollIntoView({ behavior: 'smooth' })" class="px-5 py-2.5 bg-[#181816] text-[#FAF8F5] text-xs font-mono hover:bg-[#B85331] transition rounded-sm cursor-pointer">Перейти к калькулятору ↓</button>
+                    <a href="https://market.yandex.ru/search?text=${encodeURIComponent(opt.text.split('(')[0].trim())}" target="_blank" rel="nofollow noopener" class="px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono hover:bg-[#181816] transition rounded-sm">Сравнить в магазинах ↗</a>
+                `;
+            } else if (matchedArticle) {
+                document.getElementById('feedbackBadge').innerText = matchedArticle.category.toUpperCase() + ' • ГОТОВОЕ ДОСЬЕ';
+                document.getElementById('feedbackTitle').innerText = matchedArticle.name;
+                document.getElementById('feedbackDesc').innerText = `Медиана рынка: ${matchedArticle.price}. Полное аналитическое исследование с чек-листом проверки перед сделкой доступно в журнале.`;
+                document.getElementById('feedbackActions').innerHTML = `
+                    <a href="${matchedArticle.url}" class="px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono hover:bg-[#181816] transition rounded-sm">Открыть досье и чек-лист ➔</a>
+                    <a href="https://market.yandex.ru/search?text=${encodeURIComponent(matchedArticle.name)}" target="_blank" rel="nofollow noopener" class="px-5 py-2.5 border border-[#181816] text-[#181816] text-xs font-mono hover:bg-[#181816] hover:text-white transition rounded-sm">Новый на Маркете ↗</a>
+                `;
+            } else {
+                document.getElementById('feedbackBadge').innerText = 'ПОИСКОВЫЙ ЗАПРОС: ' + val.toUpperCase();
+                document.getElementById('feedbackTitle').innerText = val;
+                document.getElementById('feedbackDesc').innerText = 'Нейросеть сформировала прямой запрос к каталогу ритейлеров и боту мониторинга цен:';
+                document.getElementById('feedbackActions').innerHTML = `
+                    <a href="https://market.yandex.ru/search?text=${encodeURIComponent(val)}" target="_blank" rel="nofollow noopener" class="px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono hover:bg-[#181816] transition rounded-sm">Сравнить цены на «${val}» на Маркете ↗</a>
+                    <a href="https://t.me/monitoringsuba_bot" target="_blank" class="px-5 py-2.5 bg-[#181816] text-white text-xs font-mono hover:bg-[#B85331] transition rounded-sm">Поставить алерт в Telegram 🔔</a>
+                `;
+            }
+        }
+
+        function showFeedbackForAvito(url) {
+            const box = document.getElementById('searchFeedback');
+            box.classList.remove('hidden');
+            document.getElementById('feedbackBadge').innerText = 'АУДИТ ОБЪЯВЛЕНИЯ С АВИТО';
+            document.getElementById('feedbackTitle').innerText = 'Обнаружена ссылка на объявление';
+            document.getElementById('feedbackDesc').innerText = 'Отправьте ссылку нашему AI-боту для мгновенного анализа: сверка с медианой DuckDB, проверка прогрева чипа и детектор перекупов.';
+            document.getElementById('feedbackActions').innerHTML = `
+                <a href="https://t.me/monitoringsuba_bot?start=audit" target="_blank" class="px-5 py-2.5 bg-[#B85331] text-white text-xs font-mono hover:bg-[#181816] transition rounded-sm shadow-sm">🚀 Запустить AI-аудит в Telegram ➔</a>
+            `;
         }
 
         function filterCatalog(query) {

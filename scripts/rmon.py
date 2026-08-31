@@ -413,6 +413,36 @@ def cmd_assets(args):
         print(f" • Цена продажи:  ${args.price} USD / 490 ₽")
         print("═"*70 + "\n")
 
+    elif args.action == "neural":
+        from rmon.services.assets.neural_engine import NeuralAssetEngine
+        print("\n🧠 ЗАПУСК НЕЙРОСЕТЕВОГО ДВИЖКА (DirectML GPU Accelerated)...")
+        engine = NeuralAssetEngine(model_id=args.model)
+        name = args.name or "neural_stone_wall"
+        prompt = args.prompt or "dark weathered castle stone masonry with green moss in crevices"
+        print(f" • Название материала: {name}")
+        print(f" • Промпт:             {prompt}")
+        print(f" • Разрешение:         {args.res}x{args.res}")
+        print(f" • Шагов диффузии:     {args.steps}\n")
+
+        res = engine.generate_pbr_material(
+            name=name,
+            prompt=prompt,
+            num_inference_steps=args.steps,
+            resolution=args.res,
+            seed=args.seed
+        )
+        print("\n" + "═"*70)
+        print(" ✅ НЕЙРОСЕТЕВОЙ PBR МАТЕРИАЛ УСПЕШНО СИНТЕЗИРОВАН!")
+        print("═"*70)
+        print(f" • Время генерации: {res['generation_time_sec']:.2f} сек")
+        print(f" • Папка с картами:  {res['dir']}")
+        print(f" • Albedo:          {res['albedo'].name}")
+        print(f" • Normal (OpenGL): {res['normal'].name}")
+        print(f" • Roughness:       {res['roughness'].name}")
+        print(f" • Height:          {res['height'].name}")
+        print(f" • Cavity AO:       {res['ao'].name}")
+        print("═"*70 + "\n")
+
 def cmd_paywall(args):
     """Управление подписками, тарифами и токенами доступа к 8 TB Cloud"""
     from rmon.services.bot.paywall import PaywallManager
@@ -491,6 +521,14 @@ def main():
     pkg_p.add_argument("--slug", default="pbr_materials_vol1", help="Slug пакета")
     pkg_p.add_argument("--title", default="PBR Material Master Pack Vol. 1", help="Название для витрины")
     pkg_p.add_argument("--price", type=float, default=4.99, help="Цена в $USD")
+
+    neu_p = asset_sub.add_parser("neural", help="Нейросетевая генерация фотореалистичных PBR материалов на DirectML GPU")
+    neu_p.add_argument("--prompt", default="weathered gothic cathedral stone wall with carved gargoyle seams and moss", help="Промпт для генерации текстуры")
+    neu_p.add_argument("--name", default="gothic_cathedral_stone", help="Название материала")
+    neu_p.add_argument("--model", default="stabilityai/sd-turbo", help="HuggingFace модель (sd-turbo, sdxl-turbo)")
+    neu_p.add_argument("--steps", type=int, default=4, help="Число шагов диффузии (1-8)")
+    neu_p.add_argument("--res", type=int, default=512, help="Разрешение (512, 1024)")
+    neu_p.add_argument("--seed", type=int, default=42, help="Случайный сид")
 
     # paywall
     pay_p = subparsers.add_parser("paywall", help="Управление подписками, тарифами и токенами 8 TB Cloud")

@@ -152,6 +152,49 @@ def cmd_transcribe(args):
     print(f"✅ Готово за {res.get('elapsed_time_sec', 0):.1f} сек!")
     print(f"📄 Результат сохранен в: {res.get('txt_file')}")
 
+def cmd_repurpose(args):
+    """Автономная упаковка подкастов/видео в контент-пак"""
+    from rmon.services.whisper.repurpose import ContentRepurposeService
+    url = args.url or args.file
+    if not url:
+        print("❌ Укажите URL или путь к файлу через --url или позиционный аргумент.")
+        return
+    asyncio.run(ContentRepurposeService.process_pipeline(url_or_path=url, model_size=args.model))
+
+def cmd_cases(args):
+    """Управление базой знаний кейсов монетизации и Idea Radar"""
+    from rmon.services.knowledge.case_manager import CaseManager
+    
+    action = args.case_action or "list"
+    if action == "list":
+        print("\n" + CaseManager.format_cli_table() + "\n")
+    elif action == "show":
+        slug = args.slug
+        if not slug:
+            print("❌ Укажите slug кейса для просмотра: python scripts/rmon.py cases show <slug>")
+            return
+        files = list(CaseManager.CASES_DIR.glob(f"{slug}*.md"))
+        if not files:
+            print(f"❌ Кейс со slug '{slug}' не найден.")
+            return
+        content = CaseManager.parse_markdown_case(files[0])
+        print("\n" + "="*80)
+        print(f"📄 ДОСЬЕ КЕЙСА: {content['meta'].get('title')} ({files[0].name})")
+        print("="*80 + "\n")
+        print(content.get("body", ""))
+        print("\n" + "="*80 + "\n")
+    elif action == "add":
+        idea = args.idea
+        if not idea:
+            print("❌ Укажите описание идеи или ссылку: python scripts/rmon.py cases add \"...\"")
+            return
+        print(f"🧠 Запуск AI-аналитика для структурирования идеи: \"{idea[:60]}...\"")
+        res = asyncio.run(CaseManager.add_case_with_ai(idea))
+        print(f"\n✅ Кейс успешно создан и проиндексирован в DuckDB!")
+        print(f"📁 Файл: {res['path']}")
+        print(f"💎 Название: {res['meta'].get('title')}")
+        print(f"💰 Потенциал: {res['meta'].get('monthly_potential_rub', 0):,.0f} ₽/мес | Срок: {res['meta'].get('time_to_cash_days')} дн.")
+
 def cmd_bot(args):
     """Запуск Telegram Gateway бота"""
     from rmon.services.whisper.bot import WhisperBot
@@ -170,6 +213,21 @@ def main():
 
     # status
     subparsers.add_parser("status", help="Телеметрия кластера и ресурсов")
+
+    # cases
+    cas_p = subparsers.add_parser("cases", help="База знаний моделей монетизации и Idea Radar")
+    cas_sub = cas_p.add_subparsers(dest="case_action", help="Действие над кейсами")
+    cas_sub.add_parser("list", help="Список всех кейсов с метриками")
+    show_p = cas_sub.add_parser("show", help="Просмотр полного досье кейса")
+    show_p.add_argument("slug", help="Slug кейса")
+    add_p = cas_sub.add_parser("add", help="AI-добавление и анализ новой идеи")
+    add_p.add_argument("idea", help="Текстовое описание идеи / связки")
+
+    # repurpose
+    rep_p = subparsers.add_parser("repurpose", help="Автономная упаковка подкастов/видео в посты и конспекты")
+    rep_p.add_argument("--url", help="YouTube/RuTube URL или путь к медиафайлу")
+    rep_p.add_argument("file", nargs="?", help="Путь к аудио/видео файлу (альтернатива --url)")
+    rep_p.add_argument("--model", default="base", help="Размер Whisper модели (tiny, base, small, medium)")
 
     # monitor
     mon_p = subparsers.add_parser("monitor", help="Мониторинг цен маркетплейсов")
@@ -206,6 +264,10 @@ def main():
 
     if args.command == "status":
         cmd_status()
+    elif args.command == "cases":
+        cmd_cases(args)
+    elif args.command == "repurpose":
+        cmd_repurpose(args)
     elif args.command == "monitor":
         cmd_monitor(args)
     elif args.command == "inspect":

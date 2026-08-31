@@ -195,6 +195,29 @@ def cmd_cases(args):
         print(f"💎 Название: {res['meta'].get('title')}")
         print(f"💰 Потенциал: {res['meta'].get('monthly_potential_rub', 0):,.0f} ₽/мес | Срок: {res['meta'].get('time_to_cash_days')} дн.")
 
+def cmd_seo(args):
+    """Генерация и локальный предпросмотр Programmatic SEO портала"""
+    import os
+    from rmon.services.seo.generator import ProgrammaticSEOGenerator
+    if args.serve:
+        import http.server
+        import socketserver
+        out_dir = ProgrammaticSEOGenerator.OUTPUT_DIR
+        if not out_dir.exists():
+            ProgrammaticSEOGenerator.build_full_portal()
+        port = args.port or 8181
+        os.chdir(str(out_dir))
+        handler = http.server.SimpleHTTPRequestHandler
+        print(f"\n🌐 Локальный веб-сервер Programmatic SEO запущен на http://127.0.0.1:{port}")
+        print("Нажмите Ctrl+C для остановки.")
+        with socketserver.TCPServer(("", port), handler) as httpd:
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\nВеб-сервер остановлен.")
+    else:
+        ProgrammaticSEOGenerator.build_full_portal()
+
 def cmd_bot(args):
     """Запуск Telegram Gateway бота"""
     from rmon.services.whisper.bot import WhisperBot
@@ -222,6 +245,12 @@ def main():
     show_p.add_argument("slug", help="Slug кейса")
     add_p = cas_sub.add_parser("add", help="AI-добавление и анализ новой идеи")
     add_p.add_argument("idea", help="Текстовое описание идеи / связки")
+
+    # seo
+    seo_p = subparsers.add_parser("seo", help="Генератор Programmatic SEO портала цен")
+    seo_p.add_argument("--build", action="store_true", help="Собрать статический сайт и sitemap.xml")
+    seo_p.add_argument("--serve", action="store_true", help="Запустить локальный сервер для предпросмотра")
+    seo_p.add_argument("--port", type=int, default=8181, help="Порт веб-сервера (по умолчанию 8181)")
 
     # repurpose
     rep_p = subparsers.add_parser("repurpose", help="Автономная упаковка подкастов/видео в посты и конспекты")
@@ -266,6 +295,8 @@ def main():
         cmd_status()
     elif args.command == "cases":
         cmd_cases(args)
+    elif args.command == "seo":
+        cmd_seo(args)
     elif args.command == "repurpose":
         cmd_repurpose(args)
     elif args.command == "monitor":

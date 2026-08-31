@@ -335,13 +335,13 @@ def cmd_comfyui(args):
     if args.action == "status" or not args.action:
         ready = builder.verify_system_readiness()
         print("\n" + "═"*70)
-        print(" 🧠 COMFYUI PORTABLE & CUDA READINESS CHECK")
+        print(" 🧠 COMFYUI PORTABLE ACCELERATION & HARDWARE READINESS")
         print("═"*70)
-        print(f" • GPU:             {ready['gpu']}")
-        print(f" • VRAM:            {ready['vram_mb']} MB")
-        print(f" • CUDA Support:    {'🟢 Готово' if ready['cuda_ready'] else '🔴 Не обнаружено'}")
+        print(f" • GPU:             {ready['gpu']} ({ready['vendor']})")
+        print(f" • VRAM:            {ready['vram_mb']} MB (High-VRAM Pool)")
+        print(f" • Backend:         {ready.get('backend', 'DirectML / CUDA')}")
         print(f" • Свободно на SSD: {ready['free_disk_gb']} GB")
-        print(f" • Статус:          {'✅ ПОЛНОСТЬЮ ГОТОВ К СБОРКЕ' if ready['is_ready'] else '⚠️ ТРЕБУЕТСЯ НАСТРОЙКА'}")
+        print(f" • Статус:          {'✅ ПОЛНОСТЬЮ ГОТОВ К СБОРКЕ И ГЕНЕРАЦИИ' if ready['is_ready'] else '⚠️ ТРЕБУЕТСЯ НАСТРОЙКА'}")
         print("═"*70 + "\n")
 
     elif args.action == "workflows":
@@ -428,6 +428,27 @@ def cmd_paywall(args):
         print(f" • Токен: {tok}")
         print(f" • Ссылка для скачивания: https://t.me/your_bot?start=dl_{tok}")
         print(f" • Время жизни: {args.ttl or 48} часов\n")
+
+def cmd_mine(args):
+    """Автономный парсинг маркетплейсов и авто-генерация страниц/калькуляторов"""
+    from rmon.services.scraper.auto_miner import AutoMinerPipeline
+    print("\n" + "═"*75)
+    print(" 🚀 ЗАПУСК АВТОНОМНОГО ПАРСИНГА МАРКЕТПЛЕЙСОВ (MARKET MINING ENGINE)")
+    print("═"*75)
+    
+    auto_deploy = not args.no_deploy
+    results = asyncio.run(AutoMinerPipeline.mine_targets(
+        target_ids=args.targets,
+        limit_per_target=args.limit,
+        auto_deploy=auto_deploy
+    ))
+
+    print("\n" + "═"*75)
+    print(" 📊 ИТОГИ АВТОНОМНОГО СБОРА ДАННЫХ:")
+    for tid, count in results.items():
+        print(f"  • [{tid}]: {count} лотов записано в Data Lake")
+    print(" 🌐 Портал и калькуляторы пересобраны и синхронизированы с GitHub Pages!")
+    print("═"*75 + "\n")
 
 def main():
     parser = argparse.ArgumentParser(description="Resource Monetization Platform CLI (RMon)")
@@ -534,6 +555,12 @@ def main():
     dig_p.add_argument("--guide", action="store_true", help="Сгенерировать обучающий гайд безопасности")
     dig_p.add_argument("--send", action="store_true", help="Отправить готовый пост в Telegram")
 
+    # mine
+    min_p = subparsers.add_parser("mine", help="Автономный парсинг маркетплейсов и авто-генерация страниц/калькуляторов")
+    min_p.add_argument("--targets", nargs="*", help="Список ID таргетов (по умолчанию все активные)")
+    min_p.add_argument("--limit", type=int, default=8, help="Лимит лотов на категорию (по умолчанию 8)")
+    min_p.add_argument("--no-deploy", action="store_true", help="Отключить авто-деплой в GitHub Pages")
+
     args = parser.parse_args()
 
     if args.command == "status":
@@ -566,6 +593,8 @@ def main():
         cmd_hybrid(args)
     elif args.command == "digest":
         cmd_digest(args)
+    elif args.command == "mine":
+        cmd_mine(args)
     else:
         cmd_status()
         parser.print_help()

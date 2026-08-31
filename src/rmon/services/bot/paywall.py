@@ -39,7 +39,7 @@ class PaywallManager:
         if tier_key not in self.tiers:
             raise ValueError(f"Unknown tier: {tier_key}")
             
-        raw = f"{user_id}:{tier_key}:{time.time()}:{settings.TELEGRAM_BOT_TOKEN or 'secret'}"
+        raw = f"{user_id}:{tier_key}:{time.time()}:{settings.BOT_TOKEN or 'secret'}"
         token = hashlib.sha256(raw.encode()).hexdigest()[:24]
         
         expires_at = time.time() + (ttl_hours * 3600)

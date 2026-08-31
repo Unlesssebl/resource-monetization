@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "duckdb-lake": {
+      "command": "python",
+      "args": ["-m", "rmon.core.lake"],
+      "env": {
+        "DUCKDB_DATABASE": "data/market_monitor.duckdb"
+      }
+    },
+    "filesystem-vault": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "f:\\Work\\Projects\\resource-monetization\\data"]
+    },
+    "fetch-stealth": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+    }
+  }
+}

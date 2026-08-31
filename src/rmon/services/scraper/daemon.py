@@ -140,9 +140,9 @@ class MonitorDaemon:
                     "seller": a.get('seller', 'Частное лицо'),
                     "url": a['url'],
                     "image_url": a.get('image_url', ''),
-                    "ai_verdict": verdict,
-                    "ai_risk": risk,
-                    "ai_summary": summary
+                    "ai_verdict": ai_eval.get("verdict", "Нейтральный"),
+                    "ai_risk": ai_eval.get("risk", "Средний"),
+                    "ai_summary": ai_eval.get("summary", "")
                 }
                 from rmon.core.gateway import TelegramGateway
                 await TelegramGateway.send_deal_alert(deal_payload)

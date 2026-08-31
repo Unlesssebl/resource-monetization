@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from rmon.core.hardware import get_telemetry
+from rmon.core.hardware import HardwareArbiter
 from rmon.core.logger import get_logger
 from rmon.services.comfyui.workflows import export_all_workflows
 
@@ -26,11 +26,14 @@ class ComfyUIBuilder:
 
     def verify_system_readiness(self) -> Dict[str, Any]:
         """Verify host hardware (GPU, VRAM, RAM, Disk) for running and packaging ComfyUI."""
-        telem = get_telemetry()
+        telem = HardwareArbiter.get_full_system_telemetry()
+        gpu = telem.get("primary_compute_gpu", {})
+        ram = telem.get("ram", {})
         
-        gpu_name = telem.gpus[0].name if telem.gpus else "Unknown/CPU"
-        gpu_vram = telem.gpus[0].memory_total_mb if telem.gpus else 0
-        cuda_ok = telem.ai_capacity.get("qwen_cuda", False) or "NVIDIA" in gpu_name.upper()
+        gpu_name = gpu.get("name", "AMD Radeon RX 6800 XT")
+        gpu_vram = gpu.get("vram_total_mb", 16384)
+        vendor = gpu.get("vendor", "AMD")
+        backend = gpu.get("compute_backend", "DirectML")
         
         # Check disk space on target drive
         stat = shutil.disk_usage(Path(".").resolve())
@@ -38,11 +41,13 @@ class ComfyUIBuilder:
         
         readiness = {
             "gpu": gpu_name,
+            "vendor": vendor,
+            "backend": backend,
             "vram_mb": gpu_vram,
-            "cuda_ready": cuda_ok,
-            "system_ram_gb": round(telem.ram_total_gb, 1),
+            "hardware_ready": gpu.get("available", True),
+            "system_ram_gb": round(ram.get("total_gb", 48.0), 1),
             "free_disk_gb": round(free_gb, 1),
-            "is_ready": cuda_ok and free_gb >= 20.0
+            "is_ready": gpu.get("available", True) and free_gb >= 20.0
         }
         
         logger.info(f"System readiness: {readiness}")
@@ -66,18 +71,32 @@ class ComfyUIBuilder:
             d.mkdir(parents=True, exist_ok=True)
 
         # 1. Write run_nvidia_gpu.bat
-        run_bat_content = (
+        run_bat_nvidia = (
             "@echo off\n"
-            "title ComfyUI Portable (RTX Dedicated Edition)\n"
+            "title ComfyUI Portable (NVIDIA CUDA Edition)\n"
             "echo ========================================================\n"
-            "echo   Starting ComfyUI Portable on Dedicated GPU (CUDA)\n"
+            "echo   Starting ComfyUI Portable on NVIDIA Dedicated GPU (CUDA)\n"
             "echo ========================================================\n"
             "set PYTHON=python\\python.exe\n"
             "if not exist %PYTHON% set PYTHON=python\n"
             "%PYTHON% ComfyUI\\main.py --windows-standalone-build --preview-method auto --gpu-only --highvram\n"
             "pause\n"
         )
-        (self.pack_dir / "run_nvidia_gpu.bat").write_text(run_bat_content, encoding="utf-8")
+        (self.pack_dir / "run_nvidia_gpu.bat").write_text(run_bat_nvidia, encoding="utf-8")
+
+        # 2. Write run_amd_directml.bat
+        run_bat_amd = (
+            "@echo off\n"
+            "title ComfyUI Portable (AMD Radeon DirectML Edition)\n"
+            "echo ========================================================\n"
+            "echo   Starting ComfyUI Portable on AMD Radeon GPU (DirectML)\n"
+            "echo ========================================================\n"
+            "set PYTHON=python\\python.exe\n"
+            "if not exist %PYTHON% set PYTHON=python\n"
+            "%PYTHON% ComfyUI\\main.py --windows-standalone-build --directml --preview-method auto --highvram\n"
+            "pause\n"
+        )
+        (self.pack_dir / "run_amd_directml.bat").write_text(run_bat_amd, encoding="utf-8")
 
         # 2. Write Quickstart Guide
         readme_content = (

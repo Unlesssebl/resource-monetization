@@ -10,23 +10,23 @@
 
 ### Доступные мощности (Мульти-хост кластер):
 
-* **Хост 1 (Текущий хост: `itt0666` — AI & Scraping Node):**
+* **Хост 2 (Текущий активный хост: `Unlesss` — Heavy Compute & Storage Node):**
+  * **CPU:** Intel Core i5-12600KF (10 ядер / 16 потоков, до 4.9 GHz)
+  * **RAM:** 48 GB DDR4 (Kingston Fury: 8GB + 32GB + 8GB)
+  * **GPU:** AMD Radeon RX 6800 XT (16 GB VRAM, Navi 21) — *DirectML / ROCm / Vulkan / DirectCompute*
+  * **Локальный накопитель:** 2.3 TB SSD (C:, D:, E:, F: >1.5 TB свободно)
+  * **Облачное хранилище:** Доступ к общему облаку 8 TB (Google Drive + Яндекс.Диск via rclone)
+  * **Режим работы:** 24/7
+  * **Сеть:** Высокоскоростной интернет 500–1000 Мбит/с
+  * **OS:** Windows 11 Pro 64-bit
+
+* **Хост 1 (Второй хост кластера: `itt0666` — AI & Scraping Node):**
   * **CPU:** Intel Core i7-12700 (12 ядер: 8P + 4E / 20 потоков, до 4.9 GHz)
   * **RAM:** 56 GB DDR5 (5200 MT/s, Kingston)
   * **Dedicated Compute GPU:** NVIDIA GeForce RTX 3050 (8 GB VRAM, CUDA 13.x / Tensor Cores) — *полностью свободна под AI/CUDA*
   * **Display GPU:** NVIDIA GeForce GTX 1650 (4 GB VRAM) — *обслуживает GUI и мониторы*
   * **Локальный накопитель:** 1 TB SSD (C:, D:, E: ~340 GB свободно)
-  * **Облачное хранилище:** Доступ к общему облаку (Google Drive + Яндекс.Диск via rclone)
   * **Сеть:** 1 Gbit/s Ethernet (Realtek 2.5 GbE) + WSL2/Hyper-V
-  * **OS:** Windows 11 Pro 64-bit
-
-* **Хост 2 (Второй хост — Heavy Compute & Storage Node):**
-  * **CPU:** Intel Core i5-12600KF (10 ядер / 16 потоков)
-  * **RAM:** 48 GB DDR4
-  * **GPU:** AMD Radeon RX 6800 XT (16 GB VRAM)
-  * **Хранилище:** 1.5 TB SSD + 8 TB Cloud (Google Drive + Яндекс.Диск via rclone)
-  * **Режим работы:** 24/7
-  * **Сеть:** Высокоскоростной интернет 500–1000 Мбит/с
 
 * **Общий стек:** Python, PowerShell / Bash, rclone, DuckDB, Playwright, Faster-Whisper, 7-Zip, Open Source CLI.
 

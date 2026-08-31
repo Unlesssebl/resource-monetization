@@ -131,23 +131,21 @@ class MonitorDaemon:
                     use_fast_model=False
                 )
 
-                verdict = ai_eval.get("verdict", "CAUTION")
-                risk = ai_eval.get("risk_score", 50)
-                summary = ai_eval.get("concise_summary", "")
-                issues = ai_eval.get("detected_issues", [])
-
-                verdict_badge = "🟢 <b>РЕКОМЕНДОВАНО К ВЫКУПУ</b>" if verdict == "BUY" else ("⚠️ <b>ТРЕБУЕТ ВНИМАНИЯ</b>" if verdict == "CAUTION" else "⛔ <b>ВЫСОКИЙ РИСК / СКАМ</b>")
-                issues_text = f"\n⚠️ <b>Флаги риска:</b> {', '.join(issues)}" if issues else ""
-
-                msg = (
-                    f"🔥 <b>Аномалия цены (-{a['discount_from_median_pct']}% от медианы)!</b>\n\n"
-                    f"📌 <b>Товар:</b> {a['title']}\n"
-                    f"💰 <b>Цена:</b> <code>{a['price_current']:,.0f} ₽</code> (медиана: <code>{a['median_price']:,.0f} ₽</code>)\n"
-                    f"📍 <b>Локация:</b> {a['location']} | 👤 {a['seller']}\n\n"
-                    f"🤖 <b>AI-Аудитор (RTX 3050 CUDA):</b> {verdict_badge} (Риск: {risk}/100)\n"
-                    f"💡 <i>{summary}</i>{issues_text}"
-                )
-                await TelegramNotifier.send_alert(msg, lot_url=a['url'])
+                deal_payload = {
+                    "title": a['title'],
+                    "price_current": a['price_current'],
+                    "median_price": a.get('median_price', 0.0),
+                    "discount_from_median_pct": a.get('discount_from_median_pct', 0.0),
+                    "location": a.get('location', ''),
+                    "seller": a.get('seller', 'Частное лицо'),
+                    "url": a['url'],
+                    "image_url": a.get('image_url', ''),
+                    "ai_verdict": verdict,
+                    "ai_risk": risk,
+                    "ai_summary": summary
+                }
+                from rmon.core.gateway import TelegramGateway
+                await TelegramGateway.send_deal_alert(deal_payload)
 
         # Анализ снижения цен
         drops = DuckDBStorage.get_price_drops(tid)

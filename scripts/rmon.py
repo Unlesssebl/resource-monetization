@@ -28,37 +28,23 @@ logger = get_logger("RMonCLI")
 
 def cmd_status():
     """Телеметрия кластера и ресурсов"""
-    print("\n" + "="*65)
-    print("🖥️  RESOURCE MONETIZATION PLATFORM — КЛАСТЕРНЫЙ СТАТУС")
-    print("="*65)
-    
-    # GPU VRAM Telemetry
-    gpu = HardwareArbiter.get_gpu_telemetry()
-    if gpu["available"]:
-        print(f"🎮 GPU 1 (AI/Compute): {gpu['name']}")
-        print(f"   • VRAM: {gpu['vram_used_mb']} MB / {gpu['vram_total_mb']} MB ({gpu['vram_free_mb']} MB свободно)")
-        print(f"   • Нагрузка: {gpu['gpu_util_pct']}% | Температура: {gpu['temperature_c']}°C")
-    else:
-        print("🎮 GPU 1: Акселерация DirectCompute / CPU Fallback")
-
-    print("\n📦 Host 2 (Heavy Node 24/7):")
-    print("   • CPU: Core i5-12600KF | RAM: 48 GB DDR4 | GPU: RX 6800 XT (16 GB)")
-    print("   • Cloud Vault: 8 TB Pool (Google Drive + Яндекс.Диск)")
+    dashboard = HardwareArbiter.format_cli_dashboard()
+    print("\n" + dashboard)
 
     # Data Lake Stats
     conn = DataLake.get_connection()
     try:
         count = conn.execute("SELECT count(*) FROM price_history").fetchone()[0]
         targets = conn.execute("SELECT count(DISTINCT target_id) FROM price_history").fetchone()[0]
-        print(f"\n📊 Data Lake (DuckDB):")
-        print(f"   • Всего записей цен: {count:,}")
-        print(f"   • Активных таргетов: {targets}")
+        print(f"\n📊 DATA LAKE (DuckDB OLAP):")
+        print(f"   • Всего записей цен в истории: {count:,}")
+        print(f"   • Активных таргетов в базе:    {targets}")
     except Exception:
         pass
     finally:
         conn.close()
 
-    print("="*65 + "\n")
+    print("="*80 + "\n")
 
 def cmd_monitor(args):
     """Сбор данных и мониторинг рынка"""

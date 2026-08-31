@@ -127,22 +127,27 @@ class TelegramGateway:
     @classmethod
     async def get_cluster_status_report(cls) -> str:
         """Формирование сводки статуса кластера и ресурсов"""
-        telem = HardwareArbiter.get_gpu_telemetry()
-        vram_info = f"{telem['vram_used_mb']} MB / {telem['vram_total_mb']} MB ({telem['temperature_c']}°C)" if telem['available'] else "GPU Inactive"
+        t = HardwareArbiter.get_full_system_telemetry()
+        ram = t["ram"]
+        gpu = t["primary_compute_gpu"]
+        adv = t["capacity_advisor"]
+        
+        disks_str = ", ".join([f"{d['mount']} {d['free_gb']}GB free" for d in t['disks']])
 
         return (
-            "🖥️ <b>Статус кластера Resource Monetization (RMon):</b>\n\n"
-            "🟢 <b>Host 1 (itt0666 - AI & Fast Node):</b>\n"
-            f"  • CPU: Intel Core i7-12700 (20 потоков)\n"
-            f"  • RAM: 56 GB DDR5\n"
-            f"  • GPU VRAM: NVIDIA RTX 3050 ({vram_info})\n\n"
-            "🟢 <b>Host 2 (Heavy & Cloud Node):</b>\n"
+            "🖥️ <b>SMART HARDWARE & CLUSTER TELEMETRY:</b>\n\n"
+            f"🟢 <b>Host 1 ({t['host_id']}):</b>\n"
+            f"  • CPU: <b>Intel Core i7-12700</b> (20 потоков)\n"
+            f"  • RAM: <b>{ram['used_gb']} GB / {ram['total_gb']} GB</b> (DDR5, нагрузка {ram['load_pct']}%)\n"
+            f"  • Compute GPU: <b>RTX 3050</b> (VRAM: {gpu['vram_used_mb']}/{gpu['vram_total_mb']} MB, {gpu['temperature_c']}°C)\n"
+            f"  • Display GPU: <b>GTX 1650</b> (4 GB VRAM)\n"
+            f"  • SSD Накопители: <code>{disks_str}</code>\n"
+            f"  • DuckDB OLAP Lake: <b>{t['lake']['duckdb_size_mb']} MB</b>\n\n"
+            "🟢 <b>Host 2 (Heavy & 24/7 Compute Node):</b>\n"
             "  • CPU: Intel Core i5-12600KF (16 потоков)\n"
-            "  • RAM: 48 GB DDR4\n"
-            "  • GPU: AMD Radeon RX 6800 XT (16 GB VRAM)\n"
+            "  • RAM: 48 GB DDR4 | GPU: AMD RX 6800 XT (16 GB)\n"
             "  • Cloud Vault: 8 TB Pool (Google Drive + Яндекс.Диск)\n\n"
-            "⚡ <b>Активные микросервисы:</b>\n"
-            "  ✓ <code>services.scraper</code> (DuckDB Engine)\n"
-            "  ✓ <code>services.whisper</code> (DirectCompute / CUDA)\n"
-            "  ✓ <code>services.vod</code> (Cloud Stream Archive)"
+            f"🧠 <b>AI Capacity Advisor:</b>\n"
+            f"  • Whisper: {adv['whisper_status']} | Qwen LLM: {adv['qwen_status']}\n"
+            f"  • <i>{adv['summary']}</i>"
         )

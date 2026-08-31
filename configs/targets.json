@@ -1,32 +1,153 @@
 {
   "settings": {
-    "min_jitter_seconds": 180,
-    "max_jitter_seconds": 600,
-    "telegram_alerts_enabled": true
+    "min_jitter_seconds": 12,
+    "max_jitter_seconds": 25,
+    "telegram_alerts_enabled": true,
+    "auto_deal_intelligence": true
   },
   "targets": [
     {
+      "id": "rtx_4090_moskva",
+      "category": "gpu",
+      "query": "RTX 4090",
+      "city": "moskva",
+      "interval_minutes": 10,
+      "anomaly_threshold_pct": 18.0,
+      "enabled": true
+    },
+    {
+      "id": "rtx_4080_moskva",
+      "category": "gpu",
+      "query": "RTX 4080",
+      "city": "moskva",
+      "interval_minutes": 8,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "rtx_4070_super_moskva",
+      "category": "gpu",
+      "query": "RTX 4070 Super",
+      "city": "moskva",
+      "interval_minutes": 6,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
       "id": "rtx_3080_moskva",
+      "category": "gpu",
       "query": "RTX 3080",
       "city": "moskva",
       "interval_minutes": 5,
-      "anomaly_threshold_pct": 20,
+      "anomaly_threshold_pct": 20.0,
       "enabled": true
     },
     {
-      "id": "rtx_4070_moskva",
-      "query": "RTX 4070",
-      "city": "moskva",
-      "interval_minutes": 7,
-      "anomaly_threshold_pct": 20,
-      "enabled": true
-    },
-    {
-      "id": "iphone_14_moskva",
-      "query": "iPhone 14",
+      "id": "rx_7800_xt_moskva",
+      "category": "gpu",
+      "query": "RX 7800 XT",
       "city": "moskva",
       "interval_minutes": 10,
-      "anomaly_threshold_pct": 20,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "iphone_15_pro_moskva",
+      "category": "apple",
+      "query": "iPhone 15 Pro",
+      "city": "moskva",
+      "interval_minutes": 5,
+      "anomaly_threshold_pct": 18.0,
+      "enabled": true
+    },
+    {
+      "id": "iphone_14_pro_moskva",
+      "category": "apple",
+      "query": "iPhone 14 Pro",
+      "city": "moskva",
+      "interval_minutes": 6,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "iphone_13_moskva",
+      "category": "apple",
+      "query": "iPhone 13",
+      "city": "moskva",
+      "interval_minutes": 8,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "macbook_air_m2_moskva",
+      "category": "apple",
+      "query": "MacBook Air M2",
+      "city": "moskva",
+      "interval_minutes": 10,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "ipad_air_m1_moskva",
+      "category": "apple",
+      "query": "iPad Air M1",
+      "city": "moskva",
+      "interval_minutes": 12,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "ryzen_7800x3d_moskva",
+      "category": "cpu",
+      "query": "Ryzen 7 7800X3D",
+      "city": "moskva",
+      "interval_minutes": 6,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "core_i7_14700k_moskva",
+      "category": "cpu",
+      "query": "Core i7 14700K",
+      "city": "moskva",
+      "interval_minutes": 8,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "ryzen_7500f_moskva",
+      "category": "cpu",
+      "query": "Ryzen 5 7500F",
+      "city": "moskva",
+      "interval_minutes": 10,
+      "anomaly_threshold_pct": 25.0,
+      "enabled": true
+    },
+    {
+      "id": "ps5_slim_moskva",
+      "category": "gaming",
+      "query": "PlayStation 5 Slim",
+      "city": "moskva",
+      "interval_minutes": 6,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "steam_deck_oled_moskva",
+      "category": "gaming",
+      "query": "Steam Deck OLED",
+      "city": "moskva",
+      "interval_minutes": 8,
+      "anomaly_threshold_pct": 20.0,
+      "enabled": true
+    },
+    {
+      "id": "sony_a7_iii_moskva",
+      "category": "photo",
+      "query": "Sony A7 III",
+      "city": "moskva",
+      "interval_minutes": 12,
+      "anomaly_threshold_pct": 20.0,
       "enabled": true
     }
   ]

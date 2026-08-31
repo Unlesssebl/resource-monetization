@@ -40,13 +40,17 @@ class AIDealAuditor:
         seller: str = "",
         location: str = "",
         market_median: Optional[float] = None,
-        use_fast_model: bool = False
+        use_fast_model: bool = False,
+        image_paths: Optional[list] = None
     ) -> Dict[str, Any]:
         """
-        Синхронный / быстрый аудит карточки товара через локальную LLM.
+        Гибридный аудит карточки товара:
+        1. Пробует облачный Gemini API с пулом ротации ключей (если заданы)
+        2. При ошибке/отсутствии ключей — мгновенный fallback на локальный Ollama Qwen 2.5 (RTX 3050 CUDA)
         """
-        model = cls.FAST_MODEL if use_fast_model else cls.DEFAULT_MODEL
-        
+        import asyncio
+        from rmon.core.config import settings
+
         user_content = f"""Объявление:
 - Заголовок: {title}
 - Цена: {price:,.0f} руб.
@@ -55,6 +59,30 @@ class AIDealAuditor:
 - Продавец: {seller}
 - Описание лота: {description or 'Описание отсутствует'}"""
 
+        # 1. Попытка через Gemini API с пулом ключей
+        if settings.GEMINI_API_KEYS:
+            try:
+                from rmon.core.gemini import GeminiClient
+                client = GeminiClient()
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                res = loop.run_until_complete(
+                    client.generate_content(
+                        prompt=user_content,
+                        system_instruction=cls.SYSTEM_PROMPT,
+                        image_paths=image_paths,
+                        json_mode=True
+                    )
+                )
+                loop.close()
+                if res.get("json"):
+                    logger.info(f"✓ AI Audit выполнен через Gemini [{res.get('model_used')}]")
+                    return res["json"]
+            except Exception as e:
+                logger.debug(f"Gemini API недоступен ({e}), переключение на локальный Ollama GPU...")
+
+        # 2. Локальный инференс через Ollama на RTX 3050 CUDA
+        model = cls.FAST_MODEL if use_fast_model else cls.DEFAULT_MODEL
         payload = {
             "model": model,
             "system": cls.SYSTEM_PROMPT,
@@ -75,18 +103,17 @@ class AIDealAuditor:
                 headers={"Content-Type": "application/json"}
             )
             with urllib.request.urlopen(req, timeout=20) as resp:
-                resp_json = json.loads(resp.read().decode("utf-8"))
-                output_text = resp_json.get("response", "{}")
-                result = json.loads(output_text)
-                logger.info(f"AI Audit [{model}] для '{title[:30]}': verdict={result.get('verdict')}, risk={result.get('risk_score')}")
-                return result
+                resp_data = json.loads(resp.read().decode("utf-8"))
+                result_json = json.loads(resp_data.get("response", "{}"))
+                logger.info(f"AI Audit [Ollama {model}] для '{title[:30]}': verdict={result_json.get('verdict')}, risk={result_json.get('risk_score')}")
+                return result_json
 
         except Exception as e:
-            logger.error(f"Ошибка вызова локальной нейросети Ollama: {e}")
+            logger.error(f"Ошибка Ollama инференса: {e}")
             return {
                 "is_scam_or_broken": False,
-                "risk_score": -1,
-                "verdict": "ERROR",
-                "detected_issues": [f"Ошибка нейросети: {str(e)}"],
-                "concise_summary": "Нейросетевой аудит не выполнен из-за технической ошибки Ollama."
+                "risk_score": 50,
+                "verdict": "CAUTION",
+                "detected_issues": [f"Ошибка AI-аудитора: {e}"],
+                "concise_summary": "Требуется ручная проверка лота."
             }

@@ -75,6 +75,8 @@ class TelegramGateway:
     @classmethod
     async def send_deal_alert(cls, deal: Dict[str, Any]):
         """Форматированная отправка найденной прибыльной сделки / аномалии"""
+        from rmon.services.ai.deal_intelligence import DealIntelligenceEngine
+
         title = deal.get("title", "Товар")
         price = deal.get("price_current", 0.0)
         median = deal.get("median_price", 0.0)
@@ -84,22 +86,36 @@ class TelegramGateway:
         url = deal.get("url", "")
         photo = deal.get("image_url")
         
+        # Расчет экономики
+        econ = DealIntelligenceEngine.calculate_deal_economics(price, median)
+        profit = econ["net_profit_rub"]
+        roi = econ["roi_pct"]
+
+        # Оценка ликвидности
+        views_str = deal.get("views", "30")
+        date_str = deal.get("date_posted", "сегодня")
+        liq = DealIntelligenceEngine.calculate_liquidity(views_str, date_str)
+
+        # Скрипт торга
+        pitch = DealIntelligenceEngine.generate_negotiation_pitch(title, price, seller)
+
         verdict = deal.get("ai_verdict", "CAUTION")
         risk = deal.get("ai_risk", 50)
         summary = deal.get("ai_summary", "")
-        profit = deal.get("net_profit_rub", max(0.0, median - price - (median * 0.07)))
 
         verdict_badge = "🟢 <b>РЕКОМЕНДОВАНО К ВЫКУПУ</b>" if verdict == "BUY" else ("⚠️ <b>ТРЕБУЕТ ВНИМАНИЯ</b>" if verdict == "CAUTION" else "⛔ <b>ВЫСОКИЙ РИСК / СКАМ</b>")
 
         text = (
-            f"🔥 <b>Сигнал арбитража (-{discount:.1f}% от медианы)!</b>\n\n"
+            f"🔥 <b>Сигнал сделки (-{discount:.1f}% от медианы)!</b>\n\n"
             f"📦 <b>Лот:</b> {title}\n"
-            f"💰 <b>Цена выкупа:</b> <code>{price:,.0f} ₽</code>\n"
-            f"📊 <b>Медиана рынка:</b> <code>{median:,.0f} ₽</code>\n"
-            f"💵 <b>Чистый профит:</b> <code>+{profit:,.0f} ₽</code> (с учетом комиссии 7%)\n"
+            f"💰 <b>Цена выкупа:</b> <code>{price:,.0f} ₽</code> (рынок: <code>{median:,.0f} ₽</code>)\n"
+            f"💵 <b>Чистый профит:</b> <code>+{profit:,.0f} ₽</code> (ROI: <b>+{roi}%</b>)\n"
+            f"📈 <b>Ликвидность:</b> <b>{liq['liquidity_score']}/100</b> ({liq['liquidity_tier']})\n"
             f"📍 <b>Локация:</b> {location} | 👤 {seller}\n\n"
             f"🤖 <b>AI Аудитор (RTX 3050):</b> {verdict_badge} (Риск: {risk}/100)\n"
-            f"💡 <i>{summary}</i>"
+            f"💡 <i>{summary}</i>\n\n"
+            f"💬 <b>Скрипт торга (быстрый выкуп на 10% дешевле):</b>\n"
+            f"<code>{pitch}</code>"
         )
 
         buttons = []

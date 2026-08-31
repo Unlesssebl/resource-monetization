@@ -309,14 +309,25 @@ class MagazineArticleSEOGenerator:
                 <span class="font-serif-editorial text-2xl tracking-tight font-medium">PriceRadar</span>
                 <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Issue 26</span>
             </a>
-            <div class="flex items-center gap-6 text-xs font-mono">
-                <span class="text-[#8C887E]">г. Москва</span>
-                <a href="https://t.me/monitoringsuba_bot" target="_blank" class="text-[#B85331] hover:underline underline-offset-4 font-medium">
-                    Telegram Алерты ➔
-                </a>
+            <div class="flex items-center gap-4 text-xs font-mono text-[#8C887E]">
+                <span>г. Москва</span>
             </div>
         </div>
     </header>
+
+    <!-- Sub-Header Editorial Dispatch Strip -->
+    <div class="border-b border-[#E3DFD5] bg-[#F4F1EA] py-3">
+        <div class="max-w-6xl mx-auto px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+            <div class="flex items-center gap-2.5 text-[#5C5952]">
+                <span class="inline-block w-2 h-2 rounded-full bg-[#B85331] animate-pulse"></span>
+                <span>LIVE МОНИТОРИНГ • Оповещения о дисконтах в зоне выкупа (ниже {p25_price:,.0f} ₽)</span>
+            </div>
+            <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center gap-2 text-[#181816] hover:text-[#B85331] font-semibold transition-colors">
+                <span>Подключить Telegram-ленту</span>
+                <span>➔</span>
+            </a>
+        </div>
+    </div>
 
     <main class="max-w-6xl mx-auto px-8 py-14 sm:py-16">
         <!-- Article Category & Bylines -->
@@ -436,21 +447,6 @@ class MagazineArticleSEOGenerator:
                             </ul>
                         </div>
                     </div>
-                </div>
-
-                <!-- Editorial Dispatch Service Module -->
-                <div class="border border-[#E3DFD5] bg-[#F4F1EA] p-5">
-                    <div class="flex items-baseline justify-between mb-1.5">
-                        <span class="font-serif-editorial text-sm font-medium text-[#181816]">Служба оперативных оповещений</span>
-                        <span class="text-[9px] font-mono uppercase tracking-widest text-[#B85331] font-semibold">Live Alert</span>
-                    </div>
-                    <p class="text-xs font-serif italic text-[#5C5952] leading-relaxed mb-3.5">
-                        Мгновенная отправка лотов в Telegram при их появлении в зоне срочного выкупа (ниже {p25_price:,.0f} ₽).
-                    </p>
-                    <a href="https://t.me/monitoringsuba_bot" target="_blank" class="inline-flex items-center justify-between w-full border border-[#181816] bg-transparent hover:bg-[#181816] text-[#181816] hover:text-[#FAF8F5] py-2 px-3 text-xs font-mono transition-all group">
-                        <span>Подключить мониторинг цен</span>
-                        <span class="group-hover:translate-x-0.5 transition-transform">➔</span>
-                    </a>
                 </div>
             </div>
         </div>

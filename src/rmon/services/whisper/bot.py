@@ -85,8 +85,8 @@ async def cb_assets_catalog(callback: types.CallbackQuery):
 async def cb_vip_paywall(callback: types.CallbackQuery):
     text = paywall_mgr.get_payment_keyboard_text()
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="💳 Оплатить 390 ₽ (ComfyUI Pack)", url="https://boosty.to")],
-        [InlineKeyboardButton(text="👑 Оплатить 790 ₽ (8 TB All-Access)", url="https://boosty.to")],
+        [InlineKeyboardButton(text="💳 Оплатить 390 ₽ (ComfyUI Pack)", url="https://boosty.to/unlesss")],
+        [InlineKeyboardButton(text="👑 Оплатить 790 ₽ (8 TB All-Access)", url="https://boosty.to/unlesss")],
         [InlineKeyboardButton(text="🔑 Ввести токен доступа", callback_data="enter_token")]
     ])
     await callback.message.answer(text, parse_mode="Markdown", reply_markup=kb)

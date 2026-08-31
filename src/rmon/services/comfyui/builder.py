@@ -110,7 +110,9 @@ class ComfyUIBuilder:
             "- `02_rpg_item_icons.json` — Иконки предметов инвентаря и экипировки с чистым фоном.\n"
             "- `03_faceswap_photoreal.json` — Фотореалистичные лица и генерация аватаров.\n"
             "- `04_super_upscale_8k.json` — Апскейл графики и текстур до 4K/8K.\n\n"
-            "Поддержка и обновления: https://boosty.to/your_channel\n"
+            f"• Файлы и сборки: {self.releases_dir}\n"
+            f"• Воркфлоу: {self.workflows_dir}\n"
+            "Поддержка и обновления: https://boosty.to/unlesss\n"
         )
         (self.pack_dir / "QUICKSTART.md").write_text(readme_content, encoding="utf-8")
 

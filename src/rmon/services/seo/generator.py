@@ -304,7 +304,7 @@ class MagazineArticleSEOGenerator:
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <!-- Masthead -->
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-5xl mx-auto px-8 h-20 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-8 h-20 flex items-center justify-between">
             <a href="/" class="flex items-baseline gap-2.5 text-sm text-[#181816] hover:opacity-80 transition">
                 <span class="font-serif-editorial text-2xl tracking-tight font-medium">PriceRadar</span>
                 <span class="text-[10px] tracking-widest uppercase font-mono text-[#8C887E]">Journal • Issue 26</span>
@@ -318,7 +318,7 @@ class MagazineArticleSEOGenerator:
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-8 py-14 sm:py-16">
+    <main class="max-w-6xl mx-auto px-8 py-14 sm:py-16">
         <!-- Article Category & Bylines -->
         <div class="flex items-center justify-between text-xs font-mono text-[#8C887E] pb-4 border-b border-[#E3DFD5] mb-12">
             <span>{hw['category'].upper()} • РЕДАКЦИОННОЕ ИССЛЕДОВАНИЕ</span>
@@ -555,7 +555,7 @@ class MagazineArticleSEOGenerator:
 </head>
 <body class="min-h-screen antialiased selection:bg-[#B85331] selection:text-white">
     <header class="border-b border-[#E3DFD5] bg-[#FAF8F5]">
-        <div class="max-w-5xl mx-auto px-8 h-20 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-8 h-20 flex items-center justify-between">
             <a href="/" class="font-serif-editorial text-2xl tracking-tight font-medium text-[#181816]">
                 PriceRadar <span class="text-xs font-mono uppercase tracking-widest text-[#8C887E]">Journal</span>
             </a>
@@ -565,7 +565,7 @@ class MagazineArticleSEOGenerator:
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-8 py-16">
+    <main class="max-w-6xl mx-auto px-8 py-16">
         <div class="pb-10 border-b border-[#E3DFD5] mb-12">
             <div class="text-[10px] font-mono uppercase tracking-widest text-[#8C887E] mb-3">INDEX • 2026 EDITION</div>
             <h1 class="font-serif-editorial text-4xl sm:text-5xl lg:text-[3.25rem] font-normal text-[#181816] tracking-tight mb-4">

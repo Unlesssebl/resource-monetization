@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:;">
     <title>PriceRadar Journal — Аналитическое издание вторичного рынка</title>
     <meta name="description" content="Журнал и открытый Data Lake ценообразования, технического скоринга и аналитики электроники.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23181816'/%3E%3Ctext x='16' y='22' font-size='18' font-family='Georgia, serif' fill='%23FAF8F5' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzE4MTgxNiIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1zaXplPSIxOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmaWxsPSIjRkFGOEY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzE4MTgxNiIvPjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1zaXplPSIxOCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmaWxsPSIjRkFGOEY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QPC90ZXh0Pjwvc3ZnPg==">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #181816; }
@@ -114,24 +116,24 @@
                 
                 <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
                     <div>
-                        <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
-                            RTX 4080 (Москва)
-                        </a>
-                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
-                    </div>
-                    <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
-                        Читать статью ➔
-                    </a>
-                </div>
-                
-                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
-                    <div>
                         <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
                             RTX 3080 (Москва)
                         </a>
                         <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
                     </div>
                     <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                        Читать статью ➔
+                    </a>
+                </div>
+                
+                <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
+                    <div>
+                        <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            RTX 4080 (Москва)
+                        </a>
+                        <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
+                    </div>
+                    <a href="prices/moskva/rtx_4080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
                         Читать статью ➔
                     </a>
                 </div>

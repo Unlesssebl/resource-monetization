@@ -94,6 +94,18 @@
                     <div id="resRating" class="font-serif-editorial text-2xl font-medium text-[#2E6F40] mt-1">Справедливая (A)</div>
                 </div>
             </div>
+
+            <!-- Dynamic CPA Retail Comparator Link -->
+            <div class="mt-6 pt-5 border-t border-[#E8E4DA] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#B85331] font-semibold tracking-wider">Официальная гарантия и безопасность</div>
+                    <div class="font-serif-editorial text-base text-[#181816] mt-0.5">Сравните стоимость новой видеокарты в авторизованных магазинах</div>
+                </div>
+                <a id="cpaLink" href="https://market.yandex.ru/search?text=NVIDIA+RTX+3080" target="_blank" rel="nofollow noopener" class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-[#181816] text-[#FAF8F5] text-xs font-mono tracking-wider hover:bg-[#B85331] transition-colors rounded-sm shadow-sm">
+                    <span>Сравнить цены на Маркете</span>
+                    <span>↗</span>
+                </a>
+            </div>
         </div>
 
         <div class="mb-16">
@@ -104,12 +116,12 @@
                 
                 <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
                     <div>
-                        <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
-                            IPHONE 15 PRO (Москва)
+                        <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            RTX 3080 (Москва)
                         </a>
                         <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
                     </div>
-                    <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                    <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
                         Читать статью ➔
                     </a>
                 </div>
@@ -140,12 +152,12 @@
                 
                 <div class="flex items-baseline justify-between py-4 border-b border-[#E8E4DA] group hover:border-[#181816] transition-colors">
                     <div>
-                        <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
-                            RTX 3080 (Москва)
+                        <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-serif-editorial text-lg text-[#181816] group-hover:text-[#B85331] transition-colors">
+                            IPHONE 15 PRO (Москва)
                         </a>
                         <div class="text-xs text-[#8C887E] font-serif italic mt-0.5">Редакционный разбор, котировки Fair Value и вердикт куратора</div>
                     </div>
-                    <a href="prices/moskva/rtx_3080_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
+                    <a href="prices/moskva/iphone_15_pro_moskva/index.html" class="font-mono text-xs text-[#8C887E] group-hover:text-[#181816] transition-colors">
                         Читать статью ➔
                     </a>
                 </div>
@@ -185,6 +197,12 @@
             } else {
                 ratingEl.innerText = '⚠️ Завышена (C)';
                 ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#8C887E] mt-1';
+            }
+
+            const optTitle = opt.text.split('—')[0].trim();
+            const cpaBtn = document.getElementById('cpaLink');
+            if (cpaBtn) {
+                cpaBtn.href = 'https://market.yandex.ru/search?text=' + encodeURIComponent(optTitle);
             }
         }
     </script>

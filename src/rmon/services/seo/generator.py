@@ -12,6 +12,7 @@ import os
 import re
 import json
 import math
+import urllib.parse
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
@@ -535,6 +536,16 @@ class MagazineArticleSEOGenerator:
                         </div>
                     </div>
                 </div>
+
+                <!-- Smart CPA Retail Alternative Widget -->
+                <div class="border-t border-[#E3DFD5] pt-6 mt-6 bg-[#FFFFFF] p-5 border border-[#E8E4DA] rounded-sm shadow-sm">
+                    <div class="text-[10px] font-mono uppercase text-[#B85331] tracking-widest mb-1 font-semibold">⚡ Альтернатива вторичке</div>
+                    <div class="font-serif-editorial text-base font-medium text-[#181816] mb-1">Новый {clean_name} в ритейле</div>
+                    <p class="text-xs text-[#5C5952] font-serif italic mb-4">Официальная гарантия 12–24 мес, заводская пломба и доставка. Без риска скрытого ремонта.</p>
+                    <a href="https://market.yandex.ru/search?text={urllib.parse.quote(clean_name)}" target="_blank" rel="nofollow noopener" class="w-full block py-2.5 px-4 bg-[#181816] text-[#FAF8F5] text-center font-mono text-xs hover:bg-[#B85331] transition-colors rounded-sm shadow-sm">
+                        Сравнить цены в магазинах ➔
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -724,6 +735,18 @@ class MagazineArticleSEOGenerator:
                     <div id="resRating" class="font-serif-editorial text-2xl font-medium text-[#2E6F40] mt-1">Справедливая (A)</div>
                 </div>
             </div>
+
+            <!-- Dynamic CPA Retail Comparator Link -->
+            <div class="mt-6 pt-5 border-t border-[#E8E4DA] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="text-[10px] font-mono uppercase text-[#B85331] font-semibold tracking-wider">Официальная гарантия и безопасность</div>
+                    <div class="font-serif-editorial text-base text-[#181816] mt-0.5">Сравните стоимость новой видеокарты в авторизованных магазинах</div>
+                </div>
+                <a id="cpaLink" href="https://market.yandex.ru/search?text=NVIDIA+RTX+3080" target="_blank" rel="nofollow noopener" class="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-[#181816] text-[#FAF8F5] text-xs font-mono tracking-wider hover:bg-[#B85331] transition-colors rounded-sm shadow-sm">
+                    <span>Сравнить цены на Маркете</span>
+                    <span>↗</span>
+                </a>
+            </div>
         </div>
 
         <div class="mb-16">
@@ -767,6 +790,12 @@ class MagazineArticleSEOGenerator:
             }} else {{
                 ratingEl.innerText = '⚠️ Завышена (C)';
                 ratingEl.className = 'font-serif-editorial text-2xl font-medium text-[#8C887E] mt-1';
+            }}
+
+            const optTitle = opt.text.split('—')[0].trim();
+            const cpaBtn = document.getElementById('cpaLink');
+            if (cpaBtn) {{
+                cpaBtn.href = 'https://market.yandex.ru/search?text=' + encodeURIComponent(optTitle);
             }}
         }}
     </script>

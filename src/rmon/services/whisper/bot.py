@@ -24,18 +24,25 @@ from rmon.services.whisper.engine import WhisperEngine
 from rmon.services.scraper.avito import AvitoScraper
 from rmon.services.ai.deal_auditor import AIDealAuditor
 
+from rmon.services.bot.paywall import PaywallManager
+
 logger = get_logger("TelegramBot")
 router = Router()
+paywall_mgr = PaywallManager()
 
 def get_main_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="🔍 Как проверить цену?", callback_data="help_check"),
+        InlineKeyboardButton(text="🎮 Каталог AI-Ассетов", callback_data="assets_catalog"),
+        InlineKeyboardButton(text="💎 VIP Доступ к 8 TB Vault", callback_data="vip_paywall")
+    )
+    builder.row(
+        InlineKeyboardButton(text="🔍 Проверить цену лота", callback_data="help_check"),
         InlineKeyboardButton(text="📊 Аналитика рынка", callback_data="market_stats")
     )
     builder.row(
-        InlineKeyboardButton(text="🛡️ Памятка безопасности на Авито", callback_data="safety_guide"),
-        InlineKeyboardButton(text="🎙️ О транскрибаторе", callback_data="whisper_info")
+        InlineKeyboardButton(text="🎙️ AI Транскрибатор", callback_data="whisper_info"),
+        InlineKeyboardButton(text="🛡️ Памятка безопасности", callback_data="safety_guide")
     )
     return builder.as_markup()
 
@@ -44,14 +51,75 @@ async def cmd_start(message: types.Message):
     user_name = message.from_user.first_name if message.from_user else "друг"
     welcome_text = (
         f"👋 <b>Здравствуйте, {user_name}!</b>\n\n"
-        "Я — <b>независимый AI-ассистент покупателя и аналитик вторичного рынка</b>.\n\n"
-        "🎯 <b>Чем я могу помочь прямо сейчас:</b>\n"
-        "1. <b>Проверить объявление:</b> Отправьте мне любую ссылку на Авито — я рассчитаю реальную рыночную цену, процент переплаты и проверю описание на скрытые риски.\n"
-        "2. <b>Узнать честную цену:</b> Напишите название товара (например, <code>RTX 3080</code> или <code>iPhone 15 Pro</code>), и я покажу срез рынка из Data Lake.\n"
-        "3. <b>AI-Транскрибация:</b> Пришлите голосовое сообщение, видеокружок или аудиофайл — расшифрую за секунды на GPU.\n\n"
-        "💡 <i>Просто отправьте ссылку на лот или название товара!</i>"
+        "Добро пожаловать в <b>RMon Multi-Host AI Hub</b> — экосистему цифровых продуктов, GPU-сервисов и аналитики.\n\n"
+        "🎯 <b>Возможности:</b>\n"
+        "1. <b>🎮 Каталог Game Ready Ассетов:</b> Наборы 2D RPG иконок, бесшовные 4K PBR текстуры с коммерческой лицензией.\n"
+        "2. <b>💎 VIP 8 TB Cloud Vault:</b> Доступ к портативным сборкам ComfyUI (DirectML/CUDA) и терабайтам архивов.\n"
+        "3. <b>🎙️ Аппаратный Whisper GPU:</b> Пришлите любое голосовое, видео или кружок — мгновенно расшифрую в текст и субтитры (.srt).\n"
+        "4. <b>🔍 Аудитор цен Авито:</b> Отправьте ссылку на объявление или название товара — рассчитаю рыночную цену и риски.\n\n"
+        "💡 <i>Выберите раздел ниже или отправьте файл / ссылку в чат!</i>"
     )
     await message.answer(welcome_text, parse_mode="HTML", reply_markup=get_main_keyboard())
+
+@router.callback_query(F.data == "assets_catalog")
+async def cb_assets_catalog(callback: types.CallbackQuery):
+    text = (
+        "🎮 <b>Каталог цифровых AI-Ассетов (Commercial Game Ready):</b>\n\n"
+        "1. ⚔️ <b>Fantasy RPG Inventory & Skill Icons (Vol. 1):</b>\n"
+        "   • 26+ стилизованных спрайтов (зелья, мечи, руны, свитки, реликвии)\n"
+        "   • Прозрачный фон (RGBA) + готовый атлас спрайтов\n"
+        "   • <i>Цена: $4.99 / 390 ₽ (или бесплатно на itch.io)</i>\n\n"
+        "2. 🏰 <b>Dark Fantasy Dungeon PBR Essentials:</b>\n"
+        "   • 5 нейросетевых материалов (стены, пол, железо, дерево, магма)\n"
+        "   • Все 5 карт: Albedo, Normal (OpenGL), Roughness, Height, AO\n"
+        "   • <i>Цена: $4.99 / 390 ₽</i>\n\n"
+        "👉 <i>Все паки включают Commercial Indie License для коммерческих игр!</i>"
+    )
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💎 Получить все паки по VIP-подписке", callback_data="vip_paywall")]
+    ])
+    await callback.message.answer(text, parse_mode="HTML", reply_markup=kb)
+    await callback.answer()
+
+@router.callback_query(F.data == "vip_paywall")
+async def cb_vip_paywall(callback: types.CallbackQuery):
+    text = paywall_mgr.get_payment_keyboard_text()
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 Оплатить 390 ₽ (ComfyUI Pack)", url="https://boosty.to")],
+        [InlineKeyboardButton(text="👑 Оплатить 790 ₽ (8 TB All-Access)", url="https://boosty.to")],
+        [InlineKeyboardButton(text="🔑 Ввести токен доступа", callback_data="enter_token")]
+    ])
+    await callback.message.answer(text, parse_mode="Markdown", reply_markup=kb)
+    await callback.answer()
+
+@router.callback_query(F.data == "enter_token")
+async def cb_enter_token(callback: types.CallbackQuery):
+    await callback.message.answer(
+        "🔑 <b>Активация VIP-токена:</b>\n\n"
+        "Отправьте команду <code>/redeem ВАШ_ТОКЕН</code>, чтобы получить персональную ссылку на скачивание.",
+        parse_mode="HTML"
+    )
+    await callback.answer()
+
+@router.message(Command("redeem"))
+async def cmd_redeem(message: types.Message):
+    args = message.text.split()
+    if len(args) < 2:
+        await message.answer("❌ Укажите токен: <code>/redeem ВАШ_ТОКЕН</code>", parse_mode="HTML")
+        return
+    token = args[1].strip()
+    verified = paywall_mgr.verify_token(token)
+    if verified:
+        await message.answer(
+            f"✅ <b>Токен успешно активирован!</b>\n\n"
+            f"• <b>Тариф:</b> <code>{verified['tier']}</code>\n"
+            f"• <b>Ссылка на 8 TB Cloud Vault:</b> https://drive.google.com/drive/folders/your_vault_id\n"
+            f"• <b>Зеркало Яндекс.Диск:</b> https://disk.yandex.ru/d/your_mirror_id\n\n"
+            f"⏳ <i>Ссылка активна 48 часов.</i>",
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("❌ Токен недействителен или срок его действия истек.", parse_mode="HTML")
 
 @router.callback_query(F.data == "help_check")
 async def cb_help_check(callback: types.CallbackQuery):

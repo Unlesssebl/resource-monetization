@@ -1,88 +1,58 @@
 # Resource Monetization (RMon) Platform
 
-Автономная платформа автоматизации, упаковки и монетизации свободных вычислительных и облачных ресурсов с нулевым стартовым бюджетом (0 ₽) и открытым стеком (Open Source First).
+Автономная платформа автоматизации, упаковки и монетизации свободных вычислительных и облачных ресурсов с нулевым стартовым бюджетом (0 ₽) на базе Open Source стека.
 
 ---
 
-## 🏛️ Мульти-хост кластер
+## 🚀 Возможности платформы
 
-* **Хост 2 (`Unlesss` — Heavy Compute & Storage Node):**
-  * **CPU:** Intel Core i5-12600KF (10 ядер / 16 потоков, до 4.9 GHz)
-  * **RAM:** 48 GB DDR4
-  * **GPU:** AMD Radeon RX 6800 XT (16 GB VRAM, Navi 21) — DirectML / ROCm / Vulkan / DirectCompute
-  * **Накопители:** 2.3 TB SSD локально + доступ к общему облаку 8 TB (Google Drive / Яндекс.Диск via rclone)
-* **Хост 1 (`itt0666` — AI & Scraping Node):**
-  * **CPU:** Intel Core i7-12700 (12 ядер / 20 потоков)
-  * **RAM:** 56 GB DDR5
-  * **Compute GPU:** NVIDIA GeForce RTX 3050 (8 GB VRAM, CUDA 13.x / Tensor Cores) — AI-аудит (Ollama Qwen 2.5)
+* **📊 Аналитический мониторинг цен**: Скрытный сбор данных (Авито / e-com) с хранением в DuckDB OLAP Lake и детекцией аномалий ниже рынка (дисконт ≥ 20%).
+* **🧠 AI-аудит и арбитраж сделок**: Гибридный анализ лотов на скам/брак (Gemini Flash API + локальная Ollama Qwen 2.5 на RTX 3050 CUDA), расчет чистой маржи и скриптов быстрого торга.
+* **🎙️ Мультимедиа-фабрика**: Аппаратная транскрибация аудио/видео через Faster-Whisper (DirectCompute на RX 6800 XT / CUDA на RTX 3050) и переупаковка контента в вирусные форматы.
+* **🌐 Programmatic SEO & витрины**: Генерация дата-дривен страниц, интерактивных калькуляторов и синхронизация с облачным хранилищем 8 TB.
+* **⚡ Асинхронный Task Queue & Buffer**: Очередь на базе Redis с автоматическим fallback на локальный JSONL-буфер для устранения блокировок DuckDB.
 
 ---
 
-## 📦 Архитектурная структура (`src/rmon/`)
+## ⚡ Быстрый старт (CLI)
 
-Платформа следует принципам Clean Architecture, DIP (инверсия зависимостей) и модульного монолита:
-
-* **`src/rmon/core/`**:
-  * `models.py` — Типизированные доменные DTO (`ListingItem`, `MarketSummary`, `DealOpportunity`, `AuditVerdict`, `QueueTask`) с поддержкой обратной совместимости (`.to_dict()`, `.from_dict()`).
-  * `queue.py` — Двухуровневая очередь задач (`RedisTaskQueue` + аварийный автономный `LocalFallbackTaskQueue` на JSONL).
-  * `media.py` — `MediaStorage` с дедупликацией изображений по SHA256 и синхронизацией в `data/cloud/media` (8 TB Cloud).
-  * `interfaces.py` — Контракты и протоколы (`LLMProvider`, `MarketDataSource`, `SpeechTranscriber`).
-  * `lake.py` — Высокопроизводительное аналитическое хранилище на базе DuckDB OLAP и Parquet.
-  * `hardware.py` — Арбитр телеметрии мульти-GPU и ресурсов кластера.
-  * `gateway.py` — Telegram Gateway с поддержкой медиа и инлайн-клавиатур.
-  * `gemini.py` — Ротация пула бесплатных ключей Gemini API.
-* **`src/rmon/services/`**:
-  * `scraper/` — Скрытный парсер Авито (`avito.py`), фоновый мониторинг (`daemon.py`), пакетный обработчик записей (`ingest_worker.py`), фасад хранилища (`storage.py`).
-  * `ai/` — Оценка ликвидности и офферы торга (`deal_intelligence.py`), гибридный AI-аудитор (`deal_auditor.py`).
-  * `whisper/` — DirectCompute / CUDA транскрибатор (`engine.py`), контент-фабрика (`repurpose.py`), бот (`bot.py`).
-  * `knowledge/` — База знаний кейсов и радар идей (`case_manager.py`).
-  * `seo/` — Генератор Programmatic SEO витрин.
-
----
-
-## ⚡ Единая консоль управления (`scripts/rmon.py`)
-
-Все сервисы запускаются через единый CLI интерфейс:
+Управление платформой осуществляется через единый диспетчер [`scripts/rmon.py`](file:///f:/Work/Projects/resource-monetization/scripts/rmon.py):
 
 ```bash
-# Телеметрия кластера, статус DuckDB и очереди задач
+# 1. Телеметрия кластера, статус DuckDB и буфера задач
 python scripts/rmon.py status
 
-# Запуск пакетного IngestWorker для DuckDB DataLake
-python scripts/rmon.py worker --batch 50 --interval 3.0
-
-# Мониторинг рынка и цен с выявлением аномалий
+# 2. Мониторинг рынка и выявление аномалий
 python scripts/rmon.py monitor --query "RTX 3080" --city moskva --limit 20
 
-# Глубокая инспекция карточки товара и скачивание фото
-python scripts/rmon.py inspect --url "<URL>"
+# 3. Запуск фонового воркера пакетной записи в DataLake
+python scripts/rmon.py worker --batch 50 --interval 3.0
 
-# Локальный AI-аудит сделок на RTX 3050 CUDA
+# 4. Локальный AI-аудит лотов на RTX 3050 CUDA
 python scripts/rmon.py audit --target "rtx_3080_moskva"
 
-# Аппаратная транскрибация аудио/видео
+# 5. Аппаратная транскрибация аудио/видео
 python scripts/rmon.py transcribe "path/to/audio.mp3" --model medium
 
-# База знаний кейсов монетизации (Idea Radar)
+# 6. База знаний и радар идей монетизации
 python scripts/rmon.py cases list
-
-# Экспорт DataLake в сжатый Parquet
-python scripts/rmon.py sync
 ```
 
 ---
 
-## 🐳 Docker & Инфраструктура
+## 🏛️ Аппаратный кластер
 
-* **Redis Buffer (`redis:alpine`)**: Запускается в легковесном контейнере (0.5 CPU, 256M RAM) для межхостовой координации.
-* **Нативный инференс (Windows)**: GPU-сервисы (Ollama Qwen 2.5 на RTX 3050 и DirectML на RX 6800 XT) запускаются нативно без накладных расходов виртуализации.
-* **Graceful Fallback**: При выключенном Docker платформа автоматически переходит на локальный буфер без потери задач.
+Платформа спроектирована для работы в распределенном мульти-хост окружении:
+* **Host 2 (`Unlesss` — Heavy Compute & Storage Node):** AMD Radeon RX 6800 XT (16 GB VRAM, DirectML/DirectCompute), 48 GB RAM, 2.3 TB SSD + доступ к общему облаку 8 TB.
+* **Host 1 (`itt0666` — AI & Scraping Node):** NVIDIA GeForce RTX 3050 (8 GB VRAM, CUDA), 56 GB DDR5, 1 Gbps Ethernet.
 
 ---
 
-## 📚 Документация
+## 📚 Документация (SSOT)
 
-* 🏗️ [Чистая архитектура платформы (docs/architecture.md)](file:///f:/Work/Projects/resource-monetization/docs/architecture.md)
-* 🐳 [Развертывание и Docker Compose (docs/docker_deployment.md)](file:///f:/Work/Projects/resource-monetization/docs/docker_deployment.md)
-* 💎 [Практические кейсы монетизации (docs/monetization_cases.md)](file:///f:/Work/Projects/resource-monetization/docs/monetization_cases.md)
-* 📊 [Интерактивный дашборд (docs/dashboard.html)](file:///f:/Work/Projects/resource-monetization/docs/dashboard.html)
+Вся техническая спецификация вынесена в специализированные руководства:
+
+* 🏗️ **[Архитектура платформы (docs/architecture.md)](file:///f:/Work/Projects/resource-monetization/docs/architecture.md)** — **Единый источник правды (SSOT)**: полное дерево директорий, структура `src/rmon/core`, DTO-контракты, TaskQueue, DataLake и MediaStorage.
+* 🐳 **[Развертывание и Docker (docs/docker_deployment.md)](file:///f:/Work/Projects/resource-monetization/docs/docker_deployment.md)** — Контейнеризация Redis, оркестрация Docker Compose и нативный запуск AI.
+* 💎 **[Кейсы монетизации (docs/monetization_cases.md)](file:///f:/Work/Projects/resource-monetization/docs/monetization_cases.md)** — Бизнес-модели, расчет юнит-экономики и Idea Radar.
+* 📊 **[Интерактивный дашборд (docs/dashboard.html)](file:///f:/Work/Projects/resource-monetization/docs/dashboard.html)** — Локальный веб-дашборд аналитики.

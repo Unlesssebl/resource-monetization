@@ -31,12 +31,12 @@
 * **Общий стек:** Python, PowerShell / Bash, rclone, DuckDB, Playwright, Faster-Whisper, 7-Zip, Open Source CLI.
 
 ### 🏛️ Архитектура платформы RMon:
-* `src/rmon/core/`: `hardware.py` (Multi-GPU & System Telemetry Arbiter), `gateway.py` (Telegram Gateway), `lake.py` (DuckDB OLAP Lake + Parquet), `gemini.py` (Key Rotation Pool & Fallback).
-* `src/rmon/services/scraper/`: `avito.py` (Playwright Stealth Scraper), `daemon.py` (24/7 Monitor Loop).
+* `src/rmon/core/`: `models.py` (Domain DTOs & Boundaries), `queue.py` (Redis + LocalFallback Queue), `media.py` (Cluster MediaStorage & SHA256 Deduplication), `interfaces.py` (Core Protocols & DIP), `hardware.py` (Multi-GPU & System Telemetry Arbiter), `gateway.py` (Telegram Gateway), `lake.py` (DuckDB OLAP Lake + Parquet), `gemini.py` (Key Rotation Pool & Fallback).
+* `src/rmon/services/scraper/`: `avito.py` (Playwright Stealth Scraper), `daemon.py` (24/7 Monitor Loop), `ingest_worker.py` (Batch DuckDB Ingestion Worker), `storage.py` (DataLake Facade).
 * `src/rmon/services/ai/`: `deal_intelligence.py` (Liquidity Velocity & Fast Cash Pitch), `deal_auditor.py` (Hybrid Gemini Flash / Ollama RTX 3050 CUDA).
 * `src/rmon/services/whisper/`: `engine.py` (DirectCompute Transcriber), `repurpose.py` (Video & Podcast Content Factory).
 * `src/rmon/services/knowledge/`: `case_manager.py` (Hybrid Markdown/DuckDB Monetization Knowledge Base & Idea Radar).
-* `scripts/rmon.py`: Единая CLI консоль управления (`status`, `cases`, `repurpose`, `monitor`, `inspect`, `audit`, `transcribe`, `bot`, `sync`).
+* `scripts/rmon.py`: Единая CLI консоль управления (`status`, `cases`, `repurpose`, `monitor`, `inspect`, `audit`, `transcribe`, `bot`, `sync`, `worker`).
 
 ---
 

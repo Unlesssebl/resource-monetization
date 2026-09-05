@@ -1,4 +1,4 @@
-﻿# Core AI & Speech-to-Text
+# Core AI & Speech-to-Text
 faster-whisper>=1.2.0
 
 # Telegram Bot Gateway
@@ -14,3 +14,4 @@ openpyxl>=3.1.0
 # Utilities & Config
 python-dotenv>=1.2.0
 tqdm>=4.70.0
+redis>=5.0.0

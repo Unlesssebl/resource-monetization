@@ -1,10 +1,19 @@
+"""
+AI Deal Auditor & Scam Filter for RMon Platform.
+Гибридный инференс: Gemini API (облако с ротацией ключей) -> Ollama Qwen 2.5 (RTX 3050 CUDA).
+Поддерживает интерфейс LLMProvider и типизированный AuditVerdict.
+"""
 import json
 import urllib.request
 import urllib.parse
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+
 from rmon.core.logger import get_logger
+from rmon.core.models import AuditVerdict, ListingItem
+from rmon.core.interfaces import LLMProvider
 
 logger = get_logger("AIDealAuditor")
+
 
 class AIDealAuditor:
     """Локальный нейросетевой аудитор объявлений на базе Ollama (Qwen 2.5 на RTX 3050 CUDA)"""
@@ -41,13 +50,45 @@ class AIDealAuditor:
         location: str = "",
         market_median: Optional[float] = None,
         use_fast_model: bool = False,
-        image_paths: Optional[list] = None
+        image_paths: Optional[list] = None,
+        llm_provider: Optional[LLMProvider] = None,
+        item_id: str = ""
     ) -> Dict[str, Any]:
         """
         Гибридный аудит карточки товара:
-        1. Пробует облачный Gemini API с пулом ротации ключей (если заданы)
+        1. Пробует переданный или настроенный Gemini API с пулом ротации ключей
         2. При ошибке/отсутствии ключей — мгновенный fallback на локальный Ollama Qwen 2.5 (RTX 3050 CUDA)
+        Возвращает проверенный словарь (совместимый с AuditVerdict.to_dict()).
         """
+        verdict = cls.audit(
+            title=title,
+            price=price,
+            description=description,
+            seller=seller,
+            location=location,
+            market_median=market_median,
+            use_fast_model=use_fast_model,
+            image_paths=image_paths,
+            llm_provider=llm_provider,
+            item_id=item_id
+        )
+        return verdict.to_dict()
+
+    @classmethod
+    def audit(
+        cls,
+        title: str,
+        price: float,
+        description: str = "",
+        seller: str = "",
+        location: str = "",
+        market_median: Optional[float] = None,
+        use_fast_model: bool = False,
+        image_paths: Optional[list] = None,
+        llm_provider: Optional[LLMProvider] = None,
+        item_id: str = ""
+    ) -> AuditVerdict:
+        """Типизированный метод аудита сделки, возвращающий AuditVerdict DTO"""
         import asyncio
         from rmon.core.config import settings
 
@@ -59,15 +100,21 @@ class AIDealAuditor:
 - Продавец: {seller}
 - Описание лота: {description or 'Описание отсутствует'}"""
 
-        # 1. Попытка через Gemini API с пулом ключей
-        if settings.GEMINI_API_KEYS:
+        # 1. Попытка через внешний LLMProvider или Gemini API
+        provider = llm_provider
+        if provider is None and settings.GEMINI_API_KEYS:
             try:
                 from rmon.core.gemini import GeminiClient
-                client = GeminiClient()
+                provider = GeminiClient()
+            except Exception:
+                pass
+
+        if provider is not None:
+            try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 res = loop.run_until_complete(
-                    client.generate_content(
+                    provider.generate_content(
                         prompt=user_content,
                         system_instruction=cls.SYSTEM_PROMPT,
                         image_paths=image_paths,
@@ -75,11 +122,21 @@ class AIDealAuditor:
                     )
                 )
                 loop.close()
-                if res.get("json"):
-                    logger.info(f"✓ AI Audit выполнен через Gemini [{res.get('model_used')}]")
-                    return res["json"]
+                raw_json = res.get("json") or {}
+                if raw_json:
+                    model_used = res.get("model_used", "Gemini")
+                    logger.info(f"✓ AI Audit выполнен через [{model_used}]")
+                    return AuditVerdict(
+                        item_id=item_id,
+                        is_scam_or_broken=bool(raw_json.get("is_scam_or_broken", False)),
+                        risk_score=int(raw_json.get("risk_score") or 50),
+                        verdict=str(raw_json.get("verdict") or "CAUTION"),
+                        detected_issues=list(raw_json.get("detected_issues") or []),
+                        concise_summary=str(raw_json.get("concise_summary") or ""),
+                        model_used=model_used
+                    )
             except Exception as e:
-                logger.debug(f"Gemini API недоступен ({e}), переключение на локальный Ollama GPU...")
+                logger.debug(f"Внешний LLM Provider недоступен ({e}), переключение на локальный Ollama GPU...")
 
         # 2. Локальный инференс через Ollama на RTX 3050 CUDA
         model = cls.FAST_MODEL if use_fast_model else cls.DEFAULT_MODEL
@@ -106,14 +163,24 @@ class AIDealAuditor:
                 resp_data = json.loads(resp.read().decode("utf-8"))
                 result_json = json.loads(resp_data.get("response", "{}"))
                 logger.info(f"AI Audit [Ollama {model}] для '{title[:30]}': verdict={result_json.get('verdict')}, risk={result_json.get('risk_score')}")
-                return result_json
+                return AuditVerdict(
+                    item_id=item_id,
+                    is_scam_or_broken=bool(result_json.get("is_scam_or_broken", False)),
+                    risk_score=int(result_json.get("risk_score") or 50),
+                    verdict=str(result_json.get("verdict") or "CAUTION"),
+                    detected_issues=list(result_json.get("detected_issues") or []),
+                    concise_summary=str(result_json.get("concise_summary") or ""),
+                    model_used=f"Ollama-{model}"
+                )
 
         except Exception as e:
             logger.error(f"Ошибка Ollama инференса: {e}")
-            return {
-                "is_scam_or_broken": False,
-                "risk_score": 50,
-                "verdict": "CAUTION",
-                "detected_issues": [f"Ошибка AI-аудитора: {e}"],
-                "concise_summary": "Требуется ручная проверка лота."
-            }
+            return AuditVerdict(
+                item_id=item_id,
+                is_scam_or_broken=False,
+                risk_score=50,
+                verdict="CAUTION",
+                detected_issues=[f"Ошибка AI-аудитора: {e}"],
+                concise_summary="Требуется ручная проверка лота.",
+                model_used="fallback-error"
+            )

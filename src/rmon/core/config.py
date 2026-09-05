@@ -55,6 +55,12 @@ class Settings:
     DUCKDB_PATH: Path = DATA_DIR / "market_monitor.duckdb"
     REPORTS_DIR: Path = DATA_DIR / "market_reports"
 
+    # Task Queue & Redis
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
+    # Shared Cloud Storage (rclone 8 TB mount or cluster shared folder)
+    SHARED_STORAGE_DIR: Path = Path(os.getenv("SHARED_STORAGE_DIR", str(DATA_DIR / "cloud")))
+
     # VOD Vault
     VOD_OUTPUT_DIR: Path = DATA_DIR / "vod_recordings"
 

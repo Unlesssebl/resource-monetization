@@ -157,6 +157,34 @@ class DataLake:
             conn.close()
 
     @classmethod
+    def get_price_drops(cls, target_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Поиск объявлений, где продавец снизил цену в последних срезах"""
+        conn = cls.get_connection()
+        try:
+            where_target = "WHERE target_id = ?" if target_id else ""
+            params = [target_id] if target_id else []
+            query = f"""
+                WITH history_lag AS (
+                    SELECT item_id, title, price_current, target_id, url, location, scraped_at,
+                           LAG(price_current) OVER (PARTITION BY item_id ORDER BY scraped_at ASC) as prev_price,
+                           ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY scraped_at DESC) as rn
+                    FROM price_history
+                    {where_target}
+                )
+                SELECT item_id, title, price_current, prev_price,
+                       round(prev_price - price_current, 0) as price_drop_rub,
+                       round(((prev_price - price_current) / prev_price) * 100, 1) as drop_pct,
+                       target_id, url, location, scraped_at
+                FROM history_lag
+                WHERE rn = 1 AND prev_price IS NOT NULL AND price_current < prev_price
+                ORDER BY drop_pct DESC;
+            """
+            df = conn.execute(query, params).fetchdf()
+            return df.to_dict(orient="records") if not df.empty else []
+        finally:
+            conn.close()
+
+    @classmethod
     def export_to_parquet(cls, output_path: Optional[Path] = None) -> Path:
         """Экспорт даталейка в сжатый Parquet для синхронизации с Хостом 2 и 8 TB Cloud"""
         out = output_path or (settings.DATA_DIR / "market_data_lake.parquet")

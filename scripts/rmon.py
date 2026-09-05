@@ -45,6 +45,18 @@ def cmd_status():
     finally:
         conn.close()
 
+    # Queue & Buffer Stats
+    try:
+        from rmon.core.queue import get_task_queue
+        q = get_task_queue()
+        q_backend = "Redis (Distributed)" if (q.is_connected() and hasattr(q, "redis_url")) else "Local Fallback (In-Memory/File)"
+        ingest_q_size = q.qsize("scrape_ingest")
+        print(f"\n⚡ TASK QUEUE & BUFFER:")
+        print(f"   • Бэкенд очереди:                 {q_backend}")
+        print(f"   • Задач в очереди 'scrape_ingest': {ingest_q_size}")
+    except Exception as e:
+        pass
+
     print("="*80 + "\n")
 
 def cmd_monitor(args):
@@ -230,6 +242,13 @@ def cmd_sync(args):
     """Экспорт Data Lake в Parquet и синхронизация с облаком"""
     parquet_path = DataLake.export_to_parquet()
     print(f"✅ Data Lake сохранен: {parquet_path}")
+
+def cmd_worker(args):
+    """Фоновый воркер асинхронной пакетной записи в Data Lake"""
+    from rmon.services.scraper.ingest_worker import IngestWorker
+    print("🚀 Запуск IngestWorker для пакетной записи в DuckDB DataLake...")
+    worker = IngestWorker(batch_size=args.batch, flush_interval_sec=args.interval)
+    worker.run()
 
 def cmd_hybrid(args):
     """
@@ -582,6 +601,11 @@ def main():
     # sync
     subparsers.add_parser("sync", help="Экспорт Data Lake и облачный бэкап")
 
+    # worker
+    wor_p = subparsers.add_parser("worker", help="Запуск фонового IngestWorker для DuckDB Data Lake")
+    wor_p.add_argument("--batch", type=int, default=50, help="Размер пакета записей (по умолчанию 50)")
+    wor_p.add_argument("--interval", type=float, default=3.0, help="Интервал сброса в секундах (по умолчанию 3.0)")
+
     # hybrid
     hyb_p = subparsers.add_parser("hybrid", help="Запуск единого сквозного гибридного цикла монетизации (Flywheel)")
     hyb_p.add_argument("--query", default="RTX 3080", help="Поисковый запрос / таргет")
@@ -627,6 +651,8 @@ def main():
         cmd_bot(args)
     elif args.command == "sync":
         cmd_sync(args)
+    elif args.command == "worker":
+        cmd_worker(args)
     elif args.command == "hybrid":
         cmd_hybrid(args)
     elif args.command == "digest":

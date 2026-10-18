@@ -190,6 +190,13 @@ class AuditVerdict:
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
+    def __getitem__(self, item: str) -> Any:
+        return getattr(self, item)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return getattr(self, key, default)
+
+
 
 @dataclass
 class QueueTask:

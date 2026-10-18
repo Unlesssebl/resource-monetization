@@ -16,10 +16,8 @@ import urllib.parse
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
-import duckdb
-
 from rmon.core.config import settings
-from rmon.core.lake import DataLake
+from rmon.services.scraper.analytics import MarketAnalytics
 from rmon.core.logger import get_logger
 
 logger = get_logger("MagazineArticleGenerator")
@@ -280,41 +278,28 @@ class MagazineArticleSEOGenerator:
     @classmethod
     def generate_product_page(cls, target_id: str, city: str = "moskva") -> Dict[str, Any]:
         """Генерация полноценной журнальной статьи"""
-        conn = DataLake.get_connection()
-        try:
-            rows = conn.execute("""
-                SELECT item_id, title, price_current, location, seller, url, image_url, scraped_at
-                FROM price_history
-                WHERE target_id = ?
-                ORDER BY scraped_at DESC
-            """, [target_id]).fetchall()
+        all_deals = MarketAnalytics.get_target_deals(target_id)
+        if not all_deals:
+            return {}
 
-            if not rows:
-                return {}
+        deals = cls.filter_legitimate_deals(all_deals)
+        prices = sorted([d["price_current"] for d in deals if d["price_current"] > 0])
 
-            cols = ["item_id", "title", "price_current", "location", "seller", "url", "image_url", "scraped_at"]
-            all_deals = [dict(zip(cols, r)) for r in rows]
-            deals = cls.filter_legitimate_deals(all_deals)
-            prices = sorted([d["price_current"] for d in deals if d["price_current"] > 0])
+        if not prices:
+            return {}
 
-            if not prices:
-                return {}
-
-            n = len(prices)
-            min_price = prices[0]
-            max_price = prices[-1]
-            med_price = prices[n // 2]
-            p25_price = prices[int(n * 0.25)]
-            p75_price = prices[int(n * 0.75)]
-            lookup_key = target_id
-            hw = cls._resolve_hardware_specs(target_id, deals[0]["title"] if deals else "")
-            clean_name = hw["name"]
-            msrp = hw["msrp_rub"]
-            msrp_diff_pct = int(((med_price - msrp) / msrp) * 100)
-            best_deals = sorted(deals, key=lambda x: x["price_current"])[:8]
-
-        finally:
-            conn.close()
+        n = len(prices)
+        min_price = prices[0]
+        max_price = prices[-1]
+        med_price = prices[n // 2]
+        p25_price = prices[int(n * 0.25)]
+        p75_price = prices[int(n * 0.75)]
+        lookup_key = target_id
+        hw = cls._resolve_hardware_specs(target_id, deals[0]["title"] if deals else "")
+        clean_name = hw["name"]
+        msrp = hw["msrp_rub"]
+        msrp_diff_pct = int(((med_price - msrp) / msrp) * 100)
+        best_deals = sorted(deals, key=lambda x: x["price_current"])[:8]
 
         now = datetime.now()
         date_full = f"{now.day} {cls.MONTH_NAMES_RU.get(now.month, 'августа')} {now.year}"
@@ -599,11 +584,7 @@ class MagazineArticleSEOGenerator:
         (cls.OUTPUT_DIR / "favicon.svg").write_text(favicon_svg, encoding="utf-8")
         (cls.OUTPUT_DIR / "favicon.ico").write_text(favicon_svg, encoding="utf-8")
 
-        conn = DataLake.get_connection()
-        try:
-            targets = [r[0] for r in conn.execute("SELECT DISTINCT target_id FROM price_history").fetchall()]
-        finally:
-            conn.close()
+        targets = MarketAnalytics.get_unique_targets()
 
         if not targets:
             targets = ["rtx_3080_moskva", "rtx_4070_moskva", "iphone_14_moskva"]

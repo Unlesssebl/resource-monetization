@@ -90,6 +90,21 @@ resource-monetization/
 ### 4. Дедуплицированное медиа-хранилище (No Split-Brain)
 Модуль [`MediaStorage`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/media.py) дедуплицирует изображения по SHA256-хэшу и сохраняет их в директорию `data/cloud/media`, синхронизируемую через rclone между всеми узлами мульти-хост кластера.
 
+### 5. Слоистая изоляция и Ports/Adapters (Clean Architecture)
+Платформа строго разграничивает зоны ответственности:
+* **Presentation / UI Layer:** ([`seo/generator.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/seo/generator.py), [`whisper/bot.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/whisper/bot.py), [`meta/build_dashboard.py`](file:///f:/Work/Projects/resource-monetization/scripts/meta/build_dashboard.py)) взаимодействует **только** с прикладными сервисами (`MarketAnalytics`) и оперирует готовыми DTO. Прямой доступ к сырому SQL и драйверам СУБД категорически исключен.
+* **Application / Use Cases:** ([`deal_notifier.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/ai/deal_notifier.py), [`daemon.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/scraper/daemon.py), [`ingest_worker.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/scraper/ingest_worker.py)) координируют доменные сервисы и инфраструктурные адаптеры.
+* **Domain Core:** ([`models.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/models.py), [`interfaces.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/interfaces.py), [`deal_intelligence.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/ai/deal_intelligence.py)) содержит чистые бизнес-правила и абстрактные порты (`LLMProvider`, `BaseStorageRepository`, `BaseTaskQueue`, `HardwareArbiterPort`).
+* **Infrastructure Layer:** ([`lake.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/lake.py), [`gateway.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/gateway.py), [`gemini.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/gemini.py), [`hardware.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/hardware.py), [`queue.py`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/queue.py)) реализует порты доменного слоя.
+
+### 6. Изоляция Data Access (Repository Pattern)
+Все SQL-запросы к аналитической базе DuckDB инкапсулированы внутри методов хранилища [`DataLake`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/lake.py) и фасада [`DuckDBStorage`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/scraper/storage.py), реализующего [`BaseStorageRepository`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/interfaces.py). Презентационные модули получают данные исключительно через вызовы доменных сервисов выборки (`get_target_deals`, `get_market_summary`, `get_unique_targets`).
+
+### 7. Принцип инверсии зависимостей (DIP) и однонаправленный поток
+* Инфраструктурный транспорт [`TelegramGateway`](file:///f:/Work/Projects/resource-monetization/src/rmon/core/gateway.py) освобожден от расчетов бизнес-логики и является «глупым» транспортом отправки сообщений.
+* Форматирование сигналов и расчет юнит-экономики вынесены в прикладной сценарий [`DealAlertNotifier`](file:///f:/Work/Projects/resource-monetization/src/rmon/services/ai/deal_notifier.py), устраняя циклические зависимости между слоями.
+* Внешние сервисы внедряются через резолверы и абстракции (`get_llm_provider`, `get_hardware_arbiter`, `get_task_queue_instance`).
+
 ---
 
-#architecture #cleancode #python #standard #duckdb #task-queue
+#architecture #cleancode #python #standard #duckdb #task-queue #clean-architecture #ports-and-adapters

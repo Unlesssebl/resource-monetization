@@ -144,8 +144,8 @@ class MonitorDaemon:
                     "ai_risk": ai_eval.get("risk", "Средний"),
                     "ai_summary": ai_eval.get("summary", "")
                 }
-                from rmon.core.gateway import TelegramGateway
-                await TelegramGateway.send_deal_alert(deal_payload)
+                from rmon.services.ai.deal_notifier import DealAlertNotifier
+                await DealAlertNotifier.send_deal_alert(deal_payload)
 
         # Анализ снижения цен
         drops = DuckDBStorage.get_price_drops(tid)

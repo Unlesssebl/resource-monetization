@@ -5,13 +5,15 @@ Storage adapter and facade for Avito/Marketplace Scrapers.
 """
 from typing import List, Dict, Any, Optional
 from rmon.core.lake import DataLake
+from rmon.core.interfaces import BaseStorageRepository
 from rmon.core.logger import get_logger
 
 logger = get_logger("ScraperStorage")
 
 
-class DuckDBStorage:
+class DuckDBStorage(BaseStorageRepository):
     """Фасад хранилища DuckDB для обратной совместимости с модулями скрейпера"""
+
 
     @staticmethod
     def get_connection():
@@ -62,3 +64,14 @@ class DuckDBStorage:
     def get_price_drops(cls, target_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Поиск объявлений со снижением цены"""
         return DataLake.get_price_drops(target_id=target_id)
+
+    @classmethod
+    def get_target_deals(cls, target_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Получение последних лотов по таргету для аналитики и витрин"""
+        return DataLake.get_target_deals(target_id=target_id, limit=limit)
+
+    @classmethod
+    def get_unique_targets(cls) -> List[str]:
+        """Получение списка уникальных категорий/таргетов"""
+        return DataLake.get_unique_targets()
+

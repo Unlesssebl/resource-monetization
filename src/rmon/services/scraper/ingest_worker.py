@@ -12,7 +12,7 @@ from collections import defaultdict
 from rmon.core.config import settings
 from rmon.core.logger import get_logger
 from rmon.core.models import QueueTask, ListingItem
-from rmon.core.queue import get_task_queue, BaseTaskQueue
+from rmon.core.interfaces import BaseTaskQueue, get_task_queue_instance as get_task_queue
 from rmon.core.lake import DataLake
 
 logger = get_logger("IngestWorker")

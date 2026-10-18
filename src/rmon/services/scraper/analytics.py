@@ -1,11 +1,27 @@
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict, Any
 from pathlib import Path
 from rmon.core.config import settings
 from rmon.services.scraper.storage import DuckDBStorage
 
 class MarketAnalytics:
     """Аналитический модуль для формирования отчетов и сигналов для агента agy"""
+
+    @classmethod
+    def get_market_summary(cls, target_id: str) -> Dict[str, Any]:
+        """Получение сводки рынка по таргету"""
+        return DuckDBStorage.get_market_summary(target_id)
+
+    @classmethod
+    def get_target_deals(cls, target_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Получение последних лотов по таргету"""
+        return DuckDBStorage.get_target_deals(target_id=target_id, limit=limit)
+
+    @classmethod
+    def get_unique_targets(cls) -> List[str]:
+        """Получение списка уникальных таргетов"""
+        return DuckDBStorage.get_unique_targets()
+
 
     @classmethod
     def generate_markdown_report(cls, target_id: str = "rtx_3080_msk", discount_threshold: float = 20.0) -> Tuple[str, str]:

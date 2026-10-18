@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, List
 
 from rmon.core.logger import get_logger
 from rmon.core.models import AuditVerdict, ListingItem
-from rmon.core.interfaces import LLMProvider
+from rmon.core.interfaces import LLMProvider, get_llm_provider
 
 logger = get_logger("AIDealAuditor")
 
@@ -100,14 +100,8 @@ class AIDealAuditor:
 - Продавец: {seller}
 - Описание лота: {description or 'Описание отсутствует'}"""
 
-        # 1. Попытка через внешний LLMProvider или Gemini API
-        provider = llm_provider
-        if provider is None and settings.GEMINI_API_KEYS:
-            try:
-                from rmon.core.gemini import GeminiClient
-                provider = GeminiClient()
-            except Exception:
-                pass
+        # 1. Попытка через переданный LLMProvider или системный резолвер
+        provider = llm_provider or get_llm_provider()
 
         if provider is not None:
             try:

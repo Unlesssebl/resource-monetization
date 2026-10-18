@@ -21,9 +21,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import timedelta
 
-from rmon.core.config import settings
-from rmon.core.gemini import GeminiClient
-from rmon.core.hardware import HardwareArbiter
+from rmon.core.interfaces import get_llm_provider, get_hardware_arbiter
 from rmon.core.logger import get_logger
 
 logger = get_logger("ContentRepurposer")
@@ -127,7 +125,8 @@ class ContentRepurposeService:
         out_txt = wav_path.with_suffix(".txt")
 
         # Блокировка слота GPU для безопасного распределения VRAM
-        await HardwareArbiter.acquire_gpu_slot("WhisperEngine", required_vram_mb=1500)
+        arbiter = get_hardware_arbiter()
+        await arbiter.acquire_gpu_slot("WhisperEngine", required_vram_mb=1500)
         start_t = time.time()
         try:
             cmd = [
@@ -146,7 +145,7 @@ class ContentRepurposeService:
             srt_content = out_srt.read_text(encoding="utf-8").strip() if out_srt.exists() else ""
 
         finally:
-            HardwareArbiter.release_gpu_slot("WhisperEngine")
+            arbiter.release_gpu_slot("WhisperEngine")
 
         elapsed = time.time() - start_t
         logger.info(f"✓ Транскрибация завершена за {elapsed:.2f} сек ({len(txt_content)} символов)")
@@ -201,8 +200,10 @@ class ContentRepurposeService:
 
 Сгенерируй полноценный контент-пак (3 уникальных поста разного формата: провокационный, пошаговый разбор и инсайт-история)."""
 
-        client = GeminiClient()
-        logger.info("🧠 AI Генерация контент-пака через Gemini Flash...")
+        client = get_llm_provider()
+        if client is None:
+            raise RuntimeError("LLMProvider не настроен (отсутствуют API ключи Gemini)")
+        logger.info("🧠 AI Генерация контент-пака через LLMProvider...")
         res = await client.generate_content(prompt=prompt, system_instruction=system_instruction, json_mode=True)
         return res.get("json") or {}
 

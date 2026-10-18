@@ -21,7 +21,6 @@ from rmon.core.logger import get_logger
 from rmon.core.lake import DataLake
 from rmon.services.scraper.avito import AvitoScraper
 from rmon.services.scraper.storage import DuckDBStorage
-from rmon.services.seo.generator import MagazineArticleSEOGenerator
 
 logger = get_logger("AutoMiner")
 
@@ -29,7 +28,13 @@ class AutoMinerPipeline:
     """Центральный оркестратор автономного парсинга и динамического обновления экосистемы"""
 
     @classmethod
-    async def mine_targets(cls, target_ids: Optional[List[str]] = None, limit_per_target: int = 8, auto_deploy: bool = True) -> Dict[str, Any]:
+    async def mine_targets(
+        cls,
+        target_ids: Optional[List[str]] = None,
+        limit_per_target: int = 8,
+        auto_deploy: bool = True,
+        on_complete: Optional[Any] = None
+    ) -> Dict[str, Any]:
         """
         Запуск пакетного парсинга маркетплейса с автоматической пересборкой портала
         """
@@ -71,8 +76,22 @@ class AutoMinerPipeline:
             await asyncio.sleep(random.uniform(5.0, 10.0))
 
         # Пересборка портала
-        logger.info("🔨 Автоматическая пересборка Programmatic SEO портала и калькуляторов...")
-        MagazineArticleSEOGenerator.build_full_portal()
+        if on_complete:
+            logger.info("🔨 Вызов зарегистрированного обработчика пересборки портала...")
+            try:
+                if asyncio.iscoroutinefunction(on_complete):
+                    await on_complete()
+                else:
+                    on_complete()
+            except Exception as e:
+                logger.warning(f"Ошибка в on_complete hook: {e}")
+        else:
+            try:
+                from rmon.services.seo.generator import MagazineArticleSEOGenerator
+                logger.info("🔨 Автоматическая пересборка Programmatic SEO портала и калькуляторов...")
+                MagazineArticleSEOGenerator.build_full_portal()
+            except Exception as e:
+                logger.warning(f"Сборка портала пропущена: {e}")
 
         # Авто-деплой в GitHub Pages при необходимости
         if auto_deploy:

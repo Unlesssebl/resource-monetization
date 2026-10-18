@@ -195,3 +195,33 @@ class DataLake:
             return out
         finally:
             conn.close()
+
+    @classmethod
+    def get_target_deals(cls, target_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Извлечение последних лотов по таргету для аналитики и презентационных витрин"""
+        conn = cls.get_connection()
+        try:
+            query = """
+                SELECT item_id, title, price_current, location, seller, url, image_url, scraped_at
+                FROM price_history
+                WHERE target_id = ?
+                ORDER BY scraped_at DESC
+            """
+            if limit and limit > 0:
+                query += f" LIMIT {int(limit)}"
+            rows = conn.execute(query, [target_id]).fetchall()
+            cols = ["item_id", "title", "price_current", "location", "seller", "url", "image_url", "scraped_at"]
+            return [dict(zip(cols, r)) for r in rows]
+        finally:
+            conn.close()
+
+    @classmethod
+    def get_unique_targets(cls) -> List[str]:
+        """Получение списка уникальных таргетов в базе"""
+        conn = cls.get_connection()
+        try:
+            rows = conn.execute("SELECT DISTINCT target_id FROM price_history WHERE target_id IS NOT NULL;").fetchall()
+            return [r[0] for r in rows if r[0]]
+        finally:
+            conn.close()
+

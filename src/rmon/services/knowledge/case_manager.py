@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional
 import duckdb
 
 from rmon.core.config import settings
-from rmon.core.gemini import GeminiClient
+from rmon.core.interfaces import get_llm_provider
 from rmon.core.lake import DataLake
 from rmon.core.logger import get_logger
 
@@ -192,8 +192,10 @@ class CaseManager:
 
         prompt = f"Разверни и проанализируй следующую идею/связку монетизации:\n\"{user_idea}\""
 
-        client = GeminiClient()
-        logger.info("🧠 AI Генерация досье кейса через Gemini...")
+        client = get_llm_provider()
+        if client is None:
+            raise RuntimeError("LLMProvider не настроен (отсутствуют ключи Gemini)")
+        logger.info("🧠 AI Генерация досье кейса через LLMProvider...")
         res = await client.generate_content(prompt=prompt, system_instruction=system_instruction, json_mode=True)
         data = res.get("json") or {}
 

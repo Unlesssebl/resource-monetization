@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from rmon.core.hardware import HardwareArbiter
+from rmon.core.interfaces import get_hardware_arbiter
 from rmon.core.logger import get_logger
 from rmon.services.comfyui.workflows import export_all_workflows
 
@@ -17,8 +17,9 @@ logger = get_logger("ComfyUIBuilder")
 class ComfyUIBuilder:
     """Automates creation, verification, workflow injection, and packaging of portable ComfyUI packs."""
 
-    def __init__(self, build_root: Optional[Path] = None):
+    def __init__(self, build_root: Optional[Path] = None, hardware_arbiter: Optional[Any] = None):
         self.build_root = build_root or Path("data/comfyui_pack")
+        self.hardware_arbiter = hardware_arbiter or get_hardware_arbiter()
         self.pack_dir = self.build_root / "ComfyUI_windows_portable"
         self.workflows_dir = self.pack_dir / "ComfyUI" / "user" / "default" / "workflows"
         self.models_dir = self.pack_dir / "ComfyUI" / "models"
@@ -26,7 +27,7 @@ class ComfyUIBuilder:
 
     def verify_system_readiness(self) -> Dict[str, Any]:
         """Verify host hardware (GPU, VRAM, RAM, Disk) for running and packaging ComfyUI."""
-        telem = HardwareArbiter.get_full_system_telemetry()
+        telem = self.hardware_arbiter.get_full_system_telemetry()
         gpu = telem.get("primary_compute_gpu", {})
         ram = telem.get("ram", {})
         

@@ -17,50 +17,7 @@ from rmon.core.models import QueueTask
 
 logger = get_logger("TaskQueue")
 
-
-class BaseTaskQueue(ABC):
-    """Базовый абстрактный класс очереди задач"""
-
-    @abstractmethod
-    def push(self, queue_name: str, task: QueueTask) -> bool:
-        """Поместить задачу в конец очереди"""
-        pass
-
-    @abstractmethod
-    def pop(self, queue_name: str, timeout: float = 0.0) -> Optional[QueueTask]:
-        """Извлечь задачу из начала очереди (FIFO)"""
-        pass
-
-    @abstractmethod
-    def qsize(self, queue_name: str) -> int:
-        """Получить текущий размер очереди"""
-        pass
-
-    @abstractmethod
-    def is_connected(self) -> bool:
-        """Проверка доступности бэкенда очереди"""
-        pass
-
-    def push_batch(self, queue_name: str, tasks: List[QueueTask]) -> int:
-        """Пакетное добавление задач"""
-        count = 0
-        for t in tasks:
-            if self.push(queue_name, t):
-                count += 1
-        return count
-
-    def pop_batch(self, queue_name: str, max_items: int = 50, timeout: float = 1.0) -> List[QueueTask]:
-        """Пакетное извлечение задач с таймаутом"""
-        items: List[QueueTask] = []
-        deadline = time.time() + timeout
-        while len(items) < max_items:
-            remaining = max(0.0, deadline - time.time())
-            item = self.pop(queue_name, timeout=remaining if items == [] else 0.0)
-            if item:
-                items.append(item)
-            else:
-                break
-        return items
+from rmon.core.interfaces import BaseTaskQueue
 
 
 class RedisTaskQueue(BaseTaskQueue):

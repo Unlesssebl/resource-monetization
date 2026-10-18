@@ -19,7 +19,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from rmon.core.config import settings
 from rmon.core.logger import get_logger
-from rmon.core.lake import DataLake
+from rmon.services.scraper.analytics import MarketAnalytics
 from rmon.services.whisper.engine import WhisperEngine
 from rmon.services.scraper.avito import AvitoScraper
 from rmon.services.ai.deal_auditor import AIDealAuditor
@@ -139,7 +139,7 @@ async def cb_market_stats(callback: types.CallbackQuery):
     lines = ["📊 <b>Текущие медианные цены (Срез Data Lake):</b>\n"]
     
     for t in targets:
-        s = DataLake.get_market_summary(t)
+        s = MarketAnalytics.get_market_summary(t)
         if s and s.get("median_price", 0) > 0:
             name = t.replace("_moskva", "").replace("_", " ").upper()
             lines.append(
@@ -208,7 +208,7 @@ async def handle_avito_link(message: types.Message):
                 matched_target = t
                 break
 
-        summary = DataLake.get_market_summary(matched_target) if matched_target else {}
+        summary = MarketAnalytics.get_market_summary(matched_target) if matched_target else {}
         median = summary.get("median_price", 0.0)
 
         # 3. AI-Аудит рисков
@@ -281,7 +281,7 @@ async def handle_text_query(message: types.Message):
         return
 
     target_id = f"{query.lower().replace(' ', '_')}_moskva"
-    summary = DataLake.get_market_summary(target_id)
+    summary = MarketAnalytics.get_market_summary(target_id)
     
     if summary and summary.get("total_items", 0) > 0:
         median = summary["median_price"]
